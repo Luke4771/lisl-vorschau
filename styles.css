@@ -666,7 +666,6 @@ h1 { margin: 0 0 calc(-.18 * var(--name)); font-size: var(--name); font-weight: 
 .kontakt-map-link { display: inline-flex; align-items: center; gap: .38em; max-width: 100%; }
 .kontakt-map-link span { min-width: 0; }
 .kontakt-map-link svg { flex: none; width: .9em; height: .9em; }
-.kontakt-besuch { max-width: 56ch; margin: clamp(20px, 2.2vw, 32px) 0 clamp(26px, 3vw, 44px); color: var(--tinte-leise); font-size: clamp(14px, 1.05vw, 16px); line-height: 1.6; }
 
 /* Die Karte ist ein liegendes Band, kein Kaestchen. Erst in dieser Breite ist
    der Weg von der Adresse zum Schwedenplatz zu erkennen; das quadratische
@@ -881,13 +880,6 @@ h1 { margin: 0 0 calc(-.18 * var(--name)); font-size: var(--name); font-weight: 
    aber nur im Schnitt 500 stehen. */
 .legal-body p strong { color: var(--tinte); font-weight: 700; }
 
-/* Kurzer Trenner im Fliesstext, seit dem 6. September 2026 zwischen der
-   Einleitung und der Angabe zum Erstgespraech. Er nimmt das Mint der
-   Unterstreichung unter „Honorar.“ auf, damit die Seite ihr eigenes Zeichen
-   wiederholt statt ein neues einzufuehren. Kurz und linksbuendig, eine Linie
-   ueber die volle Spalte waere eine Abschnittsgrenze, und die beiden Absaetze
-   gehoeren zusammen. */
-.legal-trenner { width: 48px; height: 3px; margin: clamp(20px, 2.2vw, 28px) 0; border: 0; border-radius: 2px; background: var(--marker); }
 
 /* ---------- Ueber mich ----------
    Zentriertes Originalportraet vor dem vollstaendigen Gemaelde.
