@@ -211,3 +211,32 @@ const linkedDialog = document.getElementById(location.hash.slice(1));
 if (linkedDialog instanceof HTMLDialogElement) {
   openDialog(linkedDialog, triggerFor(linkedDialog.id));
 }
+
+/* Auftritt der Bloecke beim Scrollen, angelegt am 7. September 2026. Die
+   Klasse .auftritt steht im Markup und haelt den Block unsichtbar, .ist-da gibt
+   ihn frei; die Bewegung selbst steht in styles.css, Abschnitt "Auftritt beim
+   Scrollen". Hier faellt nur die Entscheidung, wann sie beginnt.
+
+   Jeder Block wird genau einmal freigegeben und danach nicht mehr beobachtet.
+   Beim Zurueckscrollen bewegt sich nichts erneut.
+
+   threshold bleibt 0, stattdessen wandert die untere Kante des
+   Beobachtungsfensters um ein Zehntel nach oben. Ein Anteil wie 0,15 kommt bei
+   einem Block, der hoeher ist als das Fenster, nie zustande, und das
+   aufgeklappte Zivilrecht ist genau so ein Block; er bliebe unsichtbar. */
+
+const auftritte = document.querySelectorAll(".auftritt");
+
+if ("IntersectionObserver" in window) {
+  const auftrittBeobachter = new IntersectionObserver((eintraege, beobachter) => {
+    eintraege.forEach((eintrag) => {
+      if (!eintrag.isIntersecting) return;
+      eintrag.target.classList.add("ist-da");
+      beobachter.unobserve(eintrag.target);
+    });
+  }, { threshold: 0, rootMargin: "0px 0px -10% 0px" });
+
+  auftritte.forEach((element) => auftrittBeobachter.observe(element));
+} else {
+  auftritte.forEach((element) => element.classList.add("ist-da"));
+}

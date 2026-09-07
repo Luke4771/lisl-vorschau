@@ -63,7 +63,7 @@
      Fusszeile ist keine Schaltflaeche und soll sich unabhaengig aendern
      lassen. Er gilt in beiden Farbwelten, in der Mintfassung ist es das Navy
      der Ueberschriften. Weiss darauf erreicht 11,2 zu 1. */
-  --fusszeile: #173c68;
+  --fusszeile: #123054;   /* Fusszeile, ein Schritt dunkler als das Navy der Schrift */
   --fusszeile-schrift: #ffffff;
   --knopf-hero-tief: #0f2c4d;  /* dieselbe Flaeche beim Ueberfahren, 13,6:1 */
   --rahmen: #b5b1ab;        /* feine Linie um den Namen im Hero */
@@ -79,6 +79,13 @@
   --radius: clamp(18px, 1.7vw, 26px);
   --name: clamp(50px, 7.2vw, 106px);  /* Schriftgroesse des Namens, traegt auch die Masse des Rahmens */
   --marke: clamp(30px, 2.9vw, 42px);  /* Hoehe des Signets im Kopf */
+  /* Auftritt der Bloecke beim Scrollen, siehe Abschnitt "Auftritt beim
+     Scrollen". Weg und Kurve sind dieselben wie in der Animation des Hero:
+     eine Bewegung fuer die ganze Seite, nicht zwei. */
+  --auftritt-weg: 12px;
+  --auftritt-dauer: .5s;
+  --auftritt-kurve: cubic-bezier(.22, 1, .36, 1);
+  --auftritt-versatz: 70ms;  /* Abstand zwischen Elementen, die gemeinsam kommen */
 }
 
 /* ---------- Grundlagen ---------- */
@@ -747,14 +754,15 @@ h1 { margin: 0 0 calc(-.18 * var(--name)); font-size: var(--name); font-weight: 
    Die obere Kante ist gerundet wie die Karten der Seite, --radius. Dahinter
    steht die weisse Flaeche des Abschlusses, die in den Ecken durchscheint. */
 .site-footer {
-  /* Vier lokale Toene, alle aus --fusszeile abgeleitet oder weiss mit
+  /* Fuenf lokale Toene, alle aus --fusszeile abgeleitet oder weiss mit
      Deckkraft. Sie stehen hier und nicht in :root, weil sie nur auf dieser
      einen dunklen Flaeche gelten; --fusszeile ist in beiden Farbwelten
      dasselbe Navy, die Ableitung zieht also automatisch mit. */
-  --fuss-leise: rgb(255 255 255 / 76%);   /* 8,4:1 auf dem Navy */
+  --fuss-leise: rgb(255 255 255 / 76%);   /* 8,3:1 auf dem Navy */
   --fuss-still: rgb(255 255 255 / 58%);   /* nur fuer Beschriftungen */
   --fuss-linie: rgb(255 255 255 / 16%);
-  --fuss-hell: hsl(from var(--fusszeile) h s 29%);
+  --fuss-flaeche: rgb(255 255 255 / 10%); /* Scheibe unter dem Zeichen im Hover */
+  --fuss-hell: hsl(from var(--fusszeile) h s 24%);
 
   margin-inline: calc(50% - 50vw);
   padding: clamp(48px, 5.6vw, 84px) calc(50vw - 50%) clamp(20px, 2vw, 28px) calc(50vw - 50% + .35 * var(--name));
@@ -782,6 +790,18 @@ h1 { margin: 0 0 calc(-.18 * var(--name)); font-size: var(--name); font-weight: 
    derselben Hoehe stehen wie die Titel der Spalten daneben. */
 .footer-marke-name { margin: 0; font-size: clamp(18px, 1.5vw, 22px); font-weight: 700; letter-spacing: -.02em; }
 .footer-marke-satz { margin: 10px 0 0; max-width: 38ch; color: var(--fuss-leise); line-height: 1.6; }
+
+/* Instagram und LinkedIn, angelegt am 7. September 2026. Zwei Zeichen statt
+   zwei Woertern, unter dem Satz der Marke und nicht als vierte Spalte: der
+   Wegweiser daneben bleibt dreispaltig.
+   Die Beruehrflaeche misst 44 Pixel wie das Kreuz der Dialoge, das Zeichen
+   darin 22. Der negative Aussenabstand zieht die erste Flaeche um ihr halbes
+   Polster nach links, damit das Zeichen auf der Textkante darueber steht; auf
+   schmalen Fenstern faellt er weg, dort steht der ganze Block mittig. */
+.footer-social { display: flex; gap: 4px; margin: clamp(14px, 1.4vw, 20px) 0 0 -11px; }
+.footer-social a { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: var(--fuss-leise); transition: color .2s ease, background .2s ease; }
+.footer-social a:hover { color: var(--fusszeile-schrift); background: var(--fuss-flaeche); }
+.footer-social svg { width: 22px; height: 22px; }
 
 .footer-nav { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(24px, 2.8vw, 40px); }
 .footer-spalte { display: flex; flex-direction: column; align-items: flex-start; gap: clamp(9px, .9vw, 12px); }
@@ -1062,6 +1082,44 @@ html:not(.js) dialog:target .dialog-content { padding-top: 44px; }
 
 @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 
+/* ---------- Auftritt beim Scrollen ----------
+   Angelegt am 7. September 2026. Weiter unten stehende Bloecke treten einmalig
+   auf, sobald sie ins Fenster kommen: derselbe Weg und dieselbe Kurve wie im
+   Hero, nur als Uebergang statt als Animation, damit main.js ihn mit einer
+   Klasse ausloesen kann.
+
+   Die Klasse .auftritt steht im Markup und wird nicht vom Skript gesetzt.
+   Andernfalls stuenden die Bloecke fuer einen Moment sichtbar da und
+   verschwaenden danach wieder.
+
+   Zwei Bedingungen umschliessen die Regel, beide sind noetig:
+   - html.js, weil ohne JavaScript niemand .ist-da setzt. Ohne die Bedingung
+     bliebe der halbe Abschnitt dauerhaft unsichtbar.
+   - no-preference, weil die Sammelregel im Abschnitt "Bewegung reduzieren" nur
+     Uebergaenge abschaltet. Die Deckkraft null bliebe stehen, der Inhalt waere
+     auch dort dauerhaft weg. */
+
+@media (prefers-reduced-motion: no-preference) {
+  html.js .auftritt { opacity: 0; transform: translateY(var(--auftritt-weg)); }
+  html.js .auftritt.ist-da { opacity: 1; transform: none; transition: opacity var(--auftritt-dauer) var(--auftritt-kurve), transform var(--auftritt-dauer) var(--auftritt-kurve); }
+
+  /* Versatz nur dort, wo mehrere Elemente gemeinsam ins Bild kommen: die
+     Beschriftung mit ihrer Ueberschrift und die drei Ablaufkarten, die
+     nebeneinander stehen. Die Zeilen des Registers stehen untereinander und
+     erscheinen ohnehin nacheinander; ein Versatz wirkte dort wie eine
+     Verzoegerung. */
+  html.js .areas > h2.auftritt, html.js .closing-inner > h2.auftritt { transition-delay: var(--auftritt-versatz); }
+  html.js .closing-inner > .lead.auftritt { transition-delay: calc(2 * var(--auftritt-versatz)); }
+  html.js .step.auftritt:nth-child(2) { transition-delay: var(--auftritt-versatz); }
+  html.js .step.auftritt:nth-child(3) { transition-delay: calc(2 * var(--auftritt-versatz)); }
+
+  /* Die Unterstreichung unter "Ihr Anliegen." kommt zuletzt. Sie ist eine
+     text-decoration und laesst sich nicht von links einzeichnen; animierbar
+     ist allein ihre Farbe, sie blendet deshalb ein. */
+  html.js .areas h2.auftritt .marker { text-decoration-color: transparent; }
+  html.js .areas h2.auftritt.ist-da .marker { text-decoration-color: var(--marker); transition: text-decoration-color var(--auftritt-dauer) var(--auftritt-kurve) calc(3 * var(--auftritt-versatz)); }
+}
+
 /* ---------- Schmale Fenster ----------
    Unter 900 px stehen Text und Bild untereinander. Die Bildflaeche verliert den
    negativen Aussenabstand, sonst schoebe sie sich unter den Kopf. */
@@ -1123,6 +1181,7 @@ html:not(.js) dialog:target .dialog-content { padding-top: 44px; }
      Zeilen. Die Beruehrflaeche der Links waechst auf 44 Pixel. */
   .footer-oben { grid-template-columns: minmax(0, 1fr); gap: clamp(32px, 6vw, 48px); justify-items: center; text-align: center; }
   .footer-marke-satz { margin-inline: auto; }
+  .footer-social { justify-content: center; margin-left: 0; }
   .footer-nav { width: 100%; }
   .footer-spalte { gap: 4px; align-items: center; }
   .footer-spalte a { padding-block: 12px; }
