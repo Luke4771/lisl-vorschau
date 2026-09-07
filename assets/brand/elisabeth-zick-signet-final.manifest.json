@@ -1,0 +1,25 @@
+{
+  "name": "Elisabeth Zick Signet",
+  "version": "final-2026-09-07",
+  "source_reference": "/Users/alfred/Desktop/download.png",
+  "files": {
+    "vector": "elisabeth-zick-signet-final.svg",
+    "raster": "elisabeth-zick-signet-final.png",
+    "preview": "elisabeth-zick-signet-final-preview.png"
+  },
+  "canvas": {
+    "svg_view_box": "0 0 512 512",
+    "png_width": 1024,
+    "png_height": 1024,
+    "background": "transparent"
+  },
+  "colors": {
+    "mint": "#95b4a2",
+    "navy": "#173c68"
+  },
+  "sha256": {
+    "vector": "74a090412eaafddede46618f3eb52e51659094e496c5e74d453eff0c88d06cd8",
+    "raster": "a14dbcdfb56fb779b032e052862e19adf94a7aab6b6eff62e4cb2ed8e51840fa",
+    "preview": "af3bd0f844855f97a54c886d9b8099f7ef32497ad2f1725455de99982807c102"
+  }
+}

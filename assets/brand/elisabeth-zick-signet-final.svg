@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Elisabeth Zick Signet</title>
+  <desc id="desc">Zwei versetzte, abgerundete Flächen in Mint und Dunkelblau.</desc>
+  <defs>
+    <path id="upper-plane" d="M 190 66 H 411 Q 426 66 419 79 L 300 294 Q 294 305 281 305 H 65 Q 50 305 57 292 L 176 77 Q 182 66 190 66 Z" />
+    <mask id="lower-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="white" />
+      <use href="#upper-plane" fill="black" stroke="black" stroke-width="12" stroke-linejoin="round" />
+    </mask>
+  </defs>
+
+  <path
+    d="M 249 215 H 430 Q 445 215 438 228 L 320 440 Q 314 451 301 451 H 121 Q 106 451 113 438 L 231 226 Q 237 215 249 215 Z"
+    fill="#173c68"
+    mask="url(#lower-cut)"
+  />
+  <use href="#upper-plane" fill="#95b4a2" />
+</svg>
