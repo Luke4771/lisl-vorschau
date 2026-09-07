@@ -1,0 +1,1099 @@
+/* Elisabeth Zick, Rechtsanwaeltin in Wien
+   Umsetzung des Referenzlayouts vom 6. September 2026, siehe design/DESIGN.md.
+   Aufbau: Schriften, Farben, Grundlagen, Kopf, Hero, Faktenzeile, Rechtsgebiete,
+   Abschluss, Dialoge, Ansichten. */
+
+/* ---------- Schriften ----------
+   Ausgeliefert werden nur die WOFF2-Dateien aus tools/build-fonts.sh.
+   Die TTF unter assets/fonts/ sind die Quelle und werden nicht geladen.
+   Instrument Sans setzt die ganze Seite; DM Sans und Playfair Display liegen
+   nur noch als Quelle fuer einen Rueckbau im Projekt. */
+
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("assets/fonts/instrument-sans-400.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("assets/fonts/instrument-sans-500.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("assets/fonts/instrument-sans-700.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+/* ---------- Farben und Masse ----------
+   Zwei Orangetoene mit Absicht: --akzent ist das helle Orange des
+   Referenzbildes und traegt nur Flaechen ohne Text. --akzent-tief ist so weit
+   abgedunkelt, dass weisse Schrift darauf 4,7 zu 1 erreicht; es traegt
+   Schaltflaechen und die Wortmarke. Das helle Orange schafft das nicht. */
+
+:root {
+  color-scheme: light;
+  --papier: #f4f3f1;        /* Seitenflaeche */
+  --weiss: #ffffff;
+  --karte: #f3f2ef;         /* Karten auf Weiss */
+  --bild: #eae7e0;          /* Bildflaeche im Hero, warmes Beige */
+  /* Anthrazit statt Schwarz: #17161a stand mit 16,2 zu 1 hart auf dem
+     warmen Papier, #35312c nimmt den Beigeton auf und kommt auf 11,6 zu 1.
+     Immer noch weit ueber den 4,5 zu 1, aber ruhiger im Bild. */
+  --tinte: #35312c;         /* Ueberschriften und Fliesstext */
+  --tinte-leise: #6b6862;   /* Nebentext, 4,8:1 auf Papier */
+  --tinte-still: #83807a;   /* kleinste Beschriftungen */
+  --akzent: #ee6a33;        /* nur Flaechen, nie Text; weisse Symbole darauf erreichen 3,1:1 */
+  --akzent-tief: #c74a15;   /* Schaltflaechen und Wortmarke */
+  --akzent-tiefer: #a83c0f;
+  --linie: #e3e0da;
+  --ziffer: #cbc6bd;        /* grosse Ordnungsziffer im Register, bewusst leise */
+  --marker: #5ecfc0;        /* Mint der Unterstreichung unter "Ihr Anliegen." */
+  --knopf-hero: #173c68;       /* Schaltflaeche im Hero, Weiss darauf 10,5:1 */
+  /* Die Fusszeile traegt seit dem 6. September 2026 eine eigene dunkelblaue
+     Flaeche. Derselbe Wert wie --knopf-hero, aber ein eigener Name: die
+     Fusszeile ist keine Schaltflaeche und soll sich unabhaengig aendern
+     lassen. Er gilt in beiden Farbwelten, in der Mintfassung ist es das Navy
+     der Ueberschriften. Weiss darauf erreicht 11,2 zu 1. */
+  --fusszeile: #173c68;
+  --fusszeile-schrift: #ffffff;
+  --knopf-hero-tief: #0f2c4d;  /* dieselbe Flaeche beim Ueberfahren, 13,6:1 */
+  --rahmen: #b5b1ab;        /* feine Linie um den Namen im Hero */
+  --knopf-schrift: #fff;         /* Schrift auf --akzent-tief */
+  --kachel-schrift: #fff;        /* Symbol auf --akzent */
+  --knopf-schatten: 199 74 21;   /* Schattenfarbe der Schaltflaeche */
+  --bild-schatten: 78 64 46;     /* Bodenschatten in der Bildflaeche */
+  --sans: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --rand: clamp(20px, 3.4vw, 56px);
+  --kopf: clamp(56px, 5.4vw, 78px);
+  --seitenluft: clamp(10px, 1.1vw, 18px);  /* Luft ueber dem Kopf, geht in die Hero-Hoehe ein */
+  --radius: clamp(18px, 1.7vw, 26px);
+  --name: clamp(50px, 7.2vw, 106px);  /* Schriftgroesse des Namens, traegt auch die Masse des Rahmens */
+}
+
+/* ---------- Grundlagen ---------- */
+
+* { box-sizing: border-box; }
+html { background: var(--papier); scroll-behavior: smooth; }
+body { margin: 0; overflow-x: clip; background: var(--papier); color: var(--tinte); font-family: var(--sans); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+button, a { -webkit-tap-highlight-color: transparent; }
+/* Links tragen seit dem 6. September 2026 keine Unterstreichung mehr, auf
+   Wunsch von Alfred. Damit sie trotzdem als Link zu erkennen sind, stehen sie
+   im vollen --tinte und im Schnitt 500, waehrend der Satz ringsum im leisen
+   --tinte-leise und im Grundschnitt liegt. Farbe allein wuerde zu wenig
+   unterscheiden; die Kombination aus Farbe und Schnitt reicht. Ausgenommen ist
+   die Mint-Unterstreichung der Ueberschriften, die ist Schmuck und kein Link. */
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; }
+:focus-visible { outline: 2px solid var(--akzent-tief); outline-offset: 3px; border-radius: 4px; }
+
+.skip-link { position: absolute; left: -9999px; top: 0; z-index: 10; padding: 12px 18px; border-radius: 0 0 10px 0; background: var(--tinte); color: #fff; font-size: 14px; }
+.skip-link:focus { left: 0; }
+
+/* Ueber 1600 px waechst nur der Rand, nicht die Zeilenlaenge. */
+.page { max-width: 1600px; margin-inline: auto; padding: var(--seitenluft) var(--rand) 0; }
+
+/* ---------- Kopf ---------- */
+
+/* Der Einzug ist derselbe wie im Namensrahmen des Heros und im Abschnitt
+   Rechtsgebiete, calc(.35 * var(--name)). Damit stehen die Navigationspunkte
+   auf einer Senkrechten mit "Elisabeth" und den Ueberschriften darunter. */
+/* position und z-index, seit "Über mich" am rechten Ende steht: die
+   Bildflaeche des Heros ist positioniert und reicht mit ihrem negativen
+   oberen Rand unter den Kopf. Ohne eigene Ebene malte sie den Punkt zu. */
+.site-header { position: relative; z-index: 2; display: flex; align-items: center; gap: clamp(24px, 4vw, 64px); min-height: var(--kopf); padding-left: calc(.35 * var(--name)); }
+/* Der Kopf traegt keine Marke mehr: die Wortmarke wiederholte den Namen aus der
+   H1, das Monogramm an ihrer Stelle hat Alfred am 6. September 2026 ebenfalls
+   abbestellt. Es bleiben die zwei Navigationspunkte. */
+/* Die Punkte standen im leisen Nebenton und im Grundschnitt und waren neben dem
+   grossen Namen kaum zu sehen. Sie stehen jetzt in der vollen Tinte und im
+   mittleren Schnitt, wie die Kontaktangaben im Hero. Der Ueberfahrton geht
+   deshalb auf --akzent-tief, sonst gaebe es keinen Unterschied mehr zur
+   Ruhelage; in der Mintfassung faengt styles-mint.css das ab, weil dort
+   --akzent-tief und --tinte derselbe Navyton sind. */
+/* flex-wrap deckt den Fall ohne JavaScript ab: dort bleiben die Punkte auch
+   auf dem Telefon im Kopf stehen, und fuenf davon sind unter 390 Pixeln
+   Fensterbreite breiter als die Seite. Vorher schnitt overflow-x: clip den
+   letzten Punkt ab, jetzt bricht die Zeile um. */
+.main-nav { flex: 1 1 auto; display: flex; flex-wrap: wrap; gap: clamp(18px, 2.3vw, 38px); font-size: clamp(14px, 1.05vw, 16px); font-weight: 500; color: var(--tinte); }
+/* Die Seite "Über mich" beginnt direkt mit dem Bildband. Die Luft oberhalb
+   des Kopfes liegt deshalb im Kopf selbst, damit die Navigation im gesamten
+   sichtbaren Band mittig steht, auch nach einem Zurueckscrollen. */
+.about-header { margin-top: calc(-1 * var(--seitenluft)); min-height: calc(var(--kopf) + var(--seitenluft)); }
+/* Nur diese Unterseite: Weiss bis an die Fensterkanten, ohne die
+   bestehenden Textkanten oder die Hoehe der Navigation zu verschieben. */
+.about-header::before { content: ""; position: absolute; z-index: -1; top: 0; bottom: 0; left: 50%; width: 100vw; transform: translateX(-50%); background: var(--weiss); }
+.about-header .main-nav [aria-current="page"] { position: relative; }
+.about-header .main-nav [aria-current="page"]::after { content: ""; position: absolute; width: 30px; height: 1px; left: 50%; bottom: -14px; transform: translateX(-50%); background: var(--tinte); opacity: .75; }
+/* "Über mich" steht am rechten Ende der Leiste, auf Wunsch Alfreds vom
+   6. September 2026. Dort liegt im Hero die Bildflaeche des Portraets: sie
+   reicht mit ihrem negativen oberen Rand unter den Kopf, ihre rechte Kante ist
+   die rechte Textkante der Seite. Der Punkt sitzt deshalb sichtbar auf dem
+   Grund des Portraets und nicht mehr auf dem Papier. Der Abstand zur Kante ist
+   --radius, derselbe Wert wie die Eckenrundung der Bildflaeche: so bleibt der
+   Punkt innerhalb der Rundung und stoesst nicht an die Ecke.
+
+   Das margin-left: auto braucht die Leiste in voller Breite, daher flex: 1 1
+   auto in der Regel darueber. Auf schmalen Fenstern ohne JavaScript bricht die
+   Zeile um, dann steht der Punkt rechts in der zweiten Zeile. */
+.main-nav .nav-rechts { margin-left: auto; margin-right: var(--radius); }
+.main-nav a { position: relative; padding-block: 4px; transition: color .2s ease; }
+.main-nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .25s ease; }
+.main-nav a:hover { color: var(--akzent-tief); }
+.main-nav a:hover::after { transform: scaleX(1); }
+
+/* Hamburger. Er steht nur auf schmalen Fenstern und nur mit JavaScript: ohne
+   Skript liesse sich das Vollbildmenue nicht oeffnen, dann bleiben die
+   Navigationspunkte wie bisher im Kopf stehen. Die Umschaltung steht weiter
+   unten im Block fuer schmale Fenster.
+
+   Die Hoehe ist die volle Kopfhoehe, nicht 44 Pixel: damit liegt seine Mitte
+   auf derselben Waagerechten wie das Kreuz im geoeffneten Menue, und beide
+   wirken als ein Element, das umschaltet. Die Breite von 44 Pixeln haelt die
+   Beruehrflaeche auf dem von Apple und Google empfohlenen Mindestmass. */
+.nav-toggle { display: none; width: 44px; height: var(--kopf); margin-left: auto; padding: 0; border: 0; background: transparent; color: var(--tinte); cursor: pointer; }
+/* Drei Striche in derselben Staerke wie das Pluszeichen im Register. */
+.nav-toggle-strich, .nav-toggle-strich::before, .nav-toggle-strich::after { display: block; width: 24px; height: 1.5px; border-radius: 1px; background: currentColor; }
+.nav-toggle-strich { position: relative; margin-inline: auto; }
+.nav-toggle-strich::before, .nav-toggle-strich::after { content: ""; position: absolute; left: 0; }
+.nav-toggle-strich::before { top: -7px; }
+.nav-toggle-strich::after { top: 7px; }
+
+/* ---------- Hero ----------
+   Die Bildflaeche zieht sich um die Kopfhoehe nach oben, damit sie wie im
+   Referenzbild buendig mit der Seitenoberkante beginnt und die Navigation
+   links daneben steht. */
+
+/* Hero und Faktenzeile zusammen fuellen eine Fensterhoehe, Kopfhoehe und obere
+   Luft abgezogen: die Kontaktangaben sollen ohne Scrollen sichtbar sein. Der
+   Hero nimmt, was die Faktenzeile uebrig laesst. Braucht der Inhalt mehr Platz,
+   waechst der Block darueber hinaus, geklammert wird nichts. Der Hero selbst
+   hat keinen unteren Innenabstand: die Bildflaeche soll bis auf den Trennstrich
+   ueber der Faktenzeile reichen, den Abstand traegt die Textspalte. */
+.hero-screen { display: flex; flex-direction: column; min-height: calc(100svh - var(--kopf) - var(--seitenluft)); }
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); gap: clamp(24px, 3vw, 56px); align-items: stretch; flex: 1 1 auto; }
+.hero-copy { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding-block: clamp(24px, 3vw, 44px) clamp(28px, 3.4vw, 52px); }
+
+/* Abschnittsbeschriftung: gesperrte Grossbuchstaben, kein Huelle drumherum.
+   Bewusst keine abgerundete Kapsel mit farbigem Punkt. */
+.label { margin: 0 0 clamp(16px, 2vw, 26px); color: var(--akzent-tiefer); font-size: clamp(11px, .85vw, 13px); font-weight: 500; letter-spacing: .16em; text-transform: uppercase; }
+
+/* Feine Linie um den Namen, nach dem Referenzbild vom 6. September 2026. Sie
+   fasst nur den Namen. Gezeichnet wird sie aus zwei Ecken, beide
+   Pseudoelemente, damit im HTML keine leeren Elemente stehen:
+   ::before ist die Waagrechte oben mit dem kurzen Ansatz nach unten,
+   ::after die Senkrechte links mit dem kurzen Fuss nach rechts.
+   Die Waagrechte endet vor dem Ende von "Elisabeth", der Name laeuft also aus
+   der Linie heraus; im Referenzbild ist es genauso.
+   Alle Masse haengen an --name, der Schriftgroesse des Namens, und wachsen
+   damit mit. */
+.hero-frame { position: relative; align-self: flex-start; margin-top: auto; padding: calc(.55 * var(--name)) 0 0 calc(.35 * var(--name)); }
+.hero-frame::before { content: ""; position: absolute; left: 0; top: 0; right: 16%; height: calc(.25 * var(--name)); border-top: 1px solid var(--rahmen); border-right: 1px solid var(--rahmen); }
+.hero-frame::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: calc(.25 * var(--name)); border-left: 1px solid var(--rahmen); border-bottom: 1px solid var(--rahmen); }
+/* Das negative Untermass zieht die Grundlinie von "Zick" auf die Unterkante des
+   Rahmens; ohne es saesse der Fuss der Linie eine Unterlaenge zu tief. */
+h1 { margin: 0 0 calc(-.18 * var(--name)); font-size: var(--name); font-weight: 700; line-height: 1.0; letter-spacing: -.04em; }
+/* Die Berufsbezeichnung sitzt auf der oberen Linie und unterbricht sie. Der
+   Papierton hinter ihr ist die Unterbrechung; er muss der Flaeche entsprechen,
+   auf der der Hero steht. */
+/* Der seitliche Innenabstand unterbricht die Linie, verschoebe aber auch den
+   Text. Er wird deshalb vom Startpunkt wieder abgezogen: so steht das R der
+   Berufsbezeichnung genau ueber dem E von "Elisabeth". Das em bezieht sich in
+   beiden Werten auf die Schriftgroesse dieser Zeile. */
+.role { position: absolute; top: 0; left: calc(.35 * var(--name) - .5em); transform: translateY(-50%); margin: 0; padding-inline: .5em; background: var(--papier); font-size: clamp(20px, 1.8vw, 29px); font-weight: 500; line-height: 1.2; letter-spacing: -.025em; white-space: nowrap; }
+
+.lead { max-width: 34ch; margin: clamp(14px, 1.6vw, 24px) 0 0; color: var(--tinte-leise); font-size: clamp(15px, 1.2vw, 18px); line-height: 1.6; }
+/* Die drei Rechtsgebiete stehen nebeneinander, getrennt von einer feinen
+   Senkrechten. Sie ist der linke Rand des jeweils folgenden Feldes, kein
+   eigenes Element, und sitzt mittig in der Luft: Abstand und Innenabstand
+   tragen denselben Wert. Die Regel steht hinter .lead, weil das Feld beide
+   Klassen traegt und bei gleicher Spezifitaet die spaetere Regel gewinnt. */
+.hero-areas { display: flex; flex-wrap: wrap; gap: clamp(12px, 1.4vw, 20px); max-width: none; margin-left: calc(.35 * var(--name)); font-size: clamp(19px, 1.6vw, 24px); font-weight: 500; }
+.hero-areas span + span { padding-left: clamp(12px, 1.4vw, 20px); border-left: 1px solid var(--rahmen); }
+
+
+.button { display: inline-flex; align-items: center; justify-content: center; min-height: 54px; padding: 15px 34px; border: 0; border-radius: 999px; background: var(--akzent-tief); color: var(--knopf-schrift); font-family: inherit; font-size: clamp(15px, 1.1vw, 17px); font-weight: 500; letter-spacing: -.005em; box-shadow: 0 10px 26px -12px rgb(var(--knopf-schatten) / 65%); transition: background .22s ease, box-shadow .22s ease, transform .22s ease; }
+.button:hover { background: var(--akzent-tiefer); box-shadow: 0 14px 30px -12px rgb(var(--knopf-schatten) / 75%); }
+.button:active { transform: translateY(1px); box-shadow: 0 6px 16px -10px rgb(var(--knopf-schatten) / 65%); }
+/* Die Schaltflaeche im Hero ist eine Stufe groesser als die in Abschluss und
+   Dialogen und steht linksbuendig auf der Textachse. Sie traegt deshalb
+   denselben Einzug wie Name und Rechtsgebiete, calc(.35 * var(--name)): so
+   sitzt ihre linke Kante unter dem E von "Elisabeth" und nicht an der
+   Rahmenlinie. Vorher stand sie an der rechten Kante der Textspalte und hatte
+   dort keinen Bezug.
+
+   Sie traegt seit 6. September 2026 eine blaue Flaeche (--knopf-hero) und keine
+   Umrandung mehr. Beides wollte Alfred so. Das Tuerkis --marker, das vorher hier
+   stand, brauchte den dunklen Rand noch: es kam auf dem hellen Papier nur auf
+   rund 1,7 zu 1 und war als Bedienelement allein nicht zu erkennen. Das Navy
+   schafft 10,4 zu 1 gegen das Papier und traegt weisse Schrift mit 10,5 zu 1,
+   der Rand ist damit entbehrlich.
+
+   Die drei Zustandsregeln muessen hier ausgeschrieben stehen. .button:hover hat
+   dieselbe Spezifitaet wie .hero-copy .button und steht frueher im Stylesheet,
+   waere also wirkungslos. */
+.hero-copy .button { align-self: flex-start; min-height: 65px; margin-top: clamp(44px, 5.6vw, 82px); margin-left: calc(.35 * var(--name)); padding: 18px 41px; border: 0; border-radius: 14px; background: var(--knopf-hero); color: var(--knopf-schrift); box-shadow: none; font-size: clamp(18px, 1.3vw, 20px); transition: background .22s ease, color .22s ease; }
+.hero-copy .button:hover { background: var(--knopf-hero-tief); color: var(--knopf-schrift); box-shadow: none; }
+.hero-copy .button:active { transform: translateY(1px); box-shadow: none; }
+
+/* Die drei Regeln darueber sind seit dem 6. September 2026 ohne Wirkung: im
+   Hero steht keine Schaltflaeche mehr, sondern der Block hier. Sie bleiben
+   stehen, falls die Schaltflaeche zurueckkommt.
+
+   Zwei Spalten, weil die drei Werte nebeneinander breiter waeren als die
+   Textspalte: allein die Adresse misst bei 1440 Pixeln rund 225 Pixel. Sie
+   nimmt deshalb die zweite Zeile ueber beide Spalten. Der linke Einzug ist
+   derselbe wie bei den Rechtsgebieten darueber, damit unter dem Namen alles an
+   einer Kante steht. */
+.hero-contact { align-self: stretch; display: flex; flex-wrap: wrap; gap: clamp(14px, 1.6vw, 22px) clamp(22px, 2.2vw, 34px); margin-top: auto; margin-left: calc(.35 * var(--name)); padding-top: clamp(16px, 1.8vw, 24px); border-top: 1px solid var(--linie); font-size: clamp(13px, 1vw, 15px); font-style: normal; }
+.hero-contact-label { display: block; margin-bottom: clamp(5px, .6vw, 8px); color: var(--tinte-leise); font-size: clamp(10px, .8vw, 12px); font-weight: 500; letter-spacing: .14em; text-transform: uppercase; }
+.hero-contact a { transition: color .2s ease; }
+.hero-contact a:hover { color: var(--akzent-tief); }
+
+/* Die Bildflaeche steht wie im Referenzbild als gerundete Kachel im Satzspiegel,
+   ringsum gerundet und mit Abstand zum Trennstrich der Faktenzeile. Ihr Grund
+   besteht aus zwei Schattierungen: das erste Drittel ist etwas heller als die
+   restlichen zwei Drittel, mit harter Kante genau bei einem Drittel. Beide
+   Farbhalte liegen auf demselben Prozentwert, dadurch gibt es keinen Verlauf.
+   Dazu kommen ein weicher Schein hinter dem Kopf, ein sehr flacher Schatten am
+   unteren Rand und eine feine Koernung, die dem Beige Papiercharakter gibt.
+   Keine Linien und kein Muster: Ringe, Nadelstreifen und das Passepartout
+   standen hier nacheinander und wirkten alle aufgesetzt. */
+.hero-figure {
+  position: relative; margin: calc(-1 * var(--kopf)) 0 clamp(22px, 2.4vw, 36px) auto;
+  width: 100%; max-width: 760px;
+  min-height: 340px; border-radius: var(--radius); overflow: clip;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='k'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23k)' opacity='.055'/%3E%3C/svg%3E"),
+    radial-gradient(115% 85% at 62% 20%, rgb(255 255 255 / 46%), rgb(255 255 255 / 0) 64%),
+    linear-gradient(90deg, rgb(255 255 255 / 32%) 0 33.333%, rgb(255 255 255 / 0) 33.333%),
+    linear-gradient(180deg, rgb(var(--bild-schatten) / 0) 58%, rgb(var(--bild-schatten) / 9%) 100%),
+    var(--bild);
+}
+/* Naeher an das Gesicht herangerueckt: die Bildflaeche zeigt Kopf und Schultern,
+   die verschraenkten Arme laufen unten aus dem Bild. */
+.hero-figure img { position: absolute; left: 50%; bottom: -44%; z-index: 1; width: auto; max-width: none; height: 130%; transform: translateX(-50%); filter: drop-shadow(-16px 18px 38px rgb(45 34 20 / 15%)); }
+
+/* ---------- Rechtsgebiete ---------- */
+
+/* Die weisse Flaeche laeuft ueber die volle Fensterbreite, ihr Inhalt bleibt
+   aber an der Textkante der uebrigen Seite. */
+/* Der Inhalt beginnt nicht an der Textkante der Seite, sondern um denselben
+   Einzug weiter rechts, den der Name im Hero hat: calc(.35 * var(--name)) ist
+   der linke Innenabstand des Namensrahmens. Damit stehen Beschriftung,
+   Ueberschrift und die Ordnungsziffern auf einer Senkrechten mit "Elisabeth"
+   und der Rechtsgebietszeile darueber. Rechts bleibt die Kante, wo sie war,
+   also buendig mit der Bildflaeche des Heros. */
+.areas { margin-inline: calc(50% - 50vw); padding: clamp(56px, 7vw, 110px) calc(50vw - 50%) clamp(56px, 7vw, 104px) calc(50vw - 50% + .35 * var(--name)); background: var(--weiss); }
+/* Der Umbruch steht als <br> im Markup, damit "Ihr Anliegen." am Stueck steht
+   und die Unterstreichung nicht ueber zwei Zeilen zerfaellt. Die Zeilenhoehe
+   ist etwas groesser als bei den anderen Ueberschriften, das stammt noch aus
+   der Zeit der farbigen Flaeche und laesst der Linie jetzt ihren Platz. */
+.areas h2 { margin: 0; font-size: clamp(38px, 5.2vw, 76px); font-weight: 700; line-height: 1.16; letter-spacing: -.032em; }
+/* Statt einer Flaeche seit 6. September 2026 eine Unterstreichung im Mint.
+   text-decoration-skip-ink: none laesst die Linie unter dem g von "Anliegen"
+   durchlaufen, sonst risse sie dort auf. Die Linie ist Schmuck, keine
+   Information: die Ueberschrift steht in --tinte und traegt sich selbst. */
+.areas h2 .marker, .legal-intro h1 .marker { text-decoration: underline; text-decoration-color: var(--marker); text-decoration-thickness: .085em; text-underline-offset: .16em; text-decoration-skip-ink: none; }
+
+/* Register statt Karten, nach dem Konzeptbild vom 6. September 2026 unter
+   design/concepts/2026-09-06-leistungen/01-nummeriertes-register.png. Die
+   Zeilen sind native details-Elemente: geschlossen zeigen sie Ziffer und
+   Gebiet, geoeffnet den Satz aus dem Rechtsgebiete-Dialog. Ohne JavaScript
+   funktioniert das Aufklappen ebenso. */
+
+.area-register {
+  /* Ziffer und Rechtsgebiet teilen sich seit dem 6. September 2026 eine
+     Schriftgroesse. Vorher stand die Ziffer mit 81 zu 45 Pixeln fast doppelt so
+     gross neben dem Gebiet und zog den Blick auf sich, obwohl sie nur Schmuck
+     ist. Spalte und Spaltenabstand sind mitgeschrumpft, sonst risse zwischen
+     Ziffer und Gebiet eine Luecke auf. */
+  --gebiet-groesse: clamp(32px, 3vw, 45px);
+  --ziffer-spalte: clamp(46px, 4.4vw, 66px);  /* Breite der Ordnungsziffer */
+  --register-luft: clamp(14px, 1.8vw, 28px);  /* Abstand zwischen den Spalten */
+  /* Eine Dauer und eine Kurve fuer alles, was sich beim Wechsel bewegt: Hoehe,
+     Deckkraft und das Zeichen rechts. Die frueher benutzte Kurve
+     cubic-bezier(.22, 1, .36, 1) startet mit dem viereinhalbfachen Tempo einer
+     gleichmaessigen Bewegung; gemessen waren von 539 Pixeln Zivilrecht nach 100
+     Millisekunden bereits 81 Prozent weg, der Rest troepfelte nach. Das wirkte
+     wie ein Schnappen mit langem Nachlauf. Die Kurve hier beginnt bei Tempo
+     null, verteilt die Strecke gleichmaessig und landet weich. */
+  --register-dauer: .45s;
+  --register-kurve: cubic-bezier(.4, 0, .2, 1);
+  margin-top: clamp(32px, 4.2vw, 62px);
+  border-top: 1px solid var(--linie);
+}
+.area-row { border-bottom: 1px solid var(--linie); }
+
+/* Der Standardpfeil des Browsers entfaellt, das Zeichen rechts uebernimmt seine
+   Aufgabe. list-style deckt Firefox und Safari ab, das Pseudoelement Chrome. */
+.area-row summary { display: grid; grid-template-columns: var(--ziffer-spalte) minmax(0, 1fr) 16px; grid-template-areas: "ziffer titel zeichen"; align-items: center; gap: var(--register-luft); padding: clamp(22px, 2.6vw, 34px) 0; list-style: none; cursor: pointer; }
+.area-row summary::-webkit-details-marker { display: none; }
+.area-row summary:hover h3 { color: var(--akzent-tief); }
+
+/* Die Ziffer ordnet die Zeilen und bleibt bewusst leise: gross, aber sehr hell
+   und ohne Fettschnitt. Sie traegt keine Information, die nicht schon in der
+   Reihenfolge steckt, und ist deshalb im Markup aria-hidden. */
+.area-num { grid-area: ziffer; color: var(--ziffer); font-size: var(--gebiet-groesse); font-weight: 500; line-height: 1.2; letter-spacing: -.02em; }
+.area-row h3 { grid-area: titel; margin: 0; font-size: var(--gebiet-groesse); font-weight: 500; line-height: 1.2; letter-spacing: -.018em; transition: color .2s ease; }
+
+
+/* Pluszeichen aus zwei Strichen. Im geoeffneten Zustand faellt der senkrechte
+   weg, daraus wird ein Minus. */
+.area-mark { grid-area: zeichen; position: relative; justify-self: end; width: 16px; height: 16px; }
+.area-mark::before, .area-mark::after { content: ""; position: absolute; top: 50%; right: 0; left: 0; height: 1.5px; margin-top: -.75px; border-radius: 1px; background: var(--tinte-leise); transition: transform var(--register-dauer) var(--register-kurve); }
+.area-mark::after { transform: rotate(90deg); }
+.area-row[open] .area-mark::after { transform: rotate(90deg) scaleX(0); }
+
+/* Der aufgeklappte Satz beginnt an der Textkante des Gebiets, nicht an der der
+   Ziffer, damit die Spalten des Registers erhalten bleiben. */
+/* Der Inhalt blendet beim Aufklappen mit auf, statt allein von der wachsenden
+   Hoehe aufgeschnitten zu werden. Er setzt dabei etwas spaeter ein als die
+   Hoehe, damit der Platz zuerst da ist und der Text nicht gequetscht erscheint.
+
+   Der Startwert muss aus @starting-style kommen. Solange die Zeile zu ist,
+   ueberspringt content-visibility den Inhalt; es gibt dann keinen vorherigen
+   Wert, von dem aus ein Uebergang laufen koennte, und der Text stuende ohne
+   diese Regel sofort in voller Deckkraft da. Nachgemessen am 6. September 2026.
+   Kennt ein Browser @starting-style nicht, erscheint der Text eben ohne Blende,
+   wie bisher.
+
+   Beim Zuklappen bleibt es beim reinen Beschneiden. Eine Blende auch dort war
+   probiert und wieder verworfen: der Text war nach 300 von 450 Millisekunden
+   weg, und danach fiel noch eine leere Luecke zu. */
+.area-row[open] .area-detail { transition: opacity calc(.78 * var(--register-dauer)) var(--register-kurve) calc(.22 * var(--register-dauer)); }
+@starting-style { .area-row[open] .area-detail { opacity: 0; } }
+
+.area-detail { --themenbild: clamp(160px, 16vw, 230px);  /* Hoehe aller Motive, in beiden Aufbauten */
+  padding: 0 0 clamp(26px, 3vw, 38px) calc(var(--ziffer-spalte) + var(--register-luft)); color: var(--tinte-leise); }
+/* Der einleitende Satz ist gewachsen: bei 45 Pixeln Gebiet daneben sahen 17
+   Pixel wie Kleingedrucktes aus. Die Stichpunkte stehen eine Stufe darunter,
+   damit die Reihenfolge Gebiet, Satz, Stichpunkt lesbar bleibt. */
+.area-lead { max-width: 58ch; margin: 0; font-size: clamp(17px, 1.35vw, 20px); line-height: 1.55; }
+.area-points { max-width: 58ch; margin: clamp(14px, 1.6vw, 20px) 0 0; padding: 0; list-style: none; display: grid; gap: clamp(8px, .9vw, 11px); }
+.area-points li { position: relative; padding-left: 22px; font-size: clamp(15px, 1.15vw, 17px); line-height: 1.5; }
+/* Das Quadrat sitzt auf der Mitte der ersten Zeile, deshalb .75em statt einer
+   festen Hoehe: so wandert es bei jeder Schriftgroesse mit. Der Abzug ist 2 und
+   nicht 3 Pixel, also die halbe Kantenlaenge minus einen Pixel: rechnerisch
+   mittig sitzt das Quadrat optisch zu hoch, weil die Zeilenmitte ueber der
+   Mitte der Kleinbuchstaben liegt. Die Quadrate stehen auf Alfreds Wunsch
+   in beiden Farbwelten in einem gut erkennbaren Tuerkis. */
+.area-points li::before { content: ""; position: absolute; top: calc(.75em - 2px); left: 0; width: 6px; height: 6px; background: #398f88; }
+
+/* Drei illustrierte Themen je Rechtsgebiet, nach dem freigegebenen Konzept.
+   Die Bilder ergaenzen die echten HTML-Texte. Gleiche Bildflaechen halten
+   Ueberschriften und Beschreibungen auf einer gemeinsamen Grundlinie. */
+.area-topics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: clamp(18px, 2vw, 28px) 0 0; padding: 0; list-style: none; }
+/* Die drei Spalten teilen sich die Zeilen des Rasters (subgrid). Ohne das
+   beginnen Ueberschrift, Satz und Stichpunkte je nach Textlaenge auf
+   verschiedenen Hoehen; mit ihm stehen sie auf gemeinsamen Linien. Drei Zeilen,
+   das sind Bild, Ueberschrift und Punkteliste; den Satz darunter gibt es seit
+   dem 6. September 2026 nicht mehr. */
+.area-topic { min-width: 0; padding-inline: clamp(18px, 2vw, 30px); display: grid; grid-template-rows: subgrid; grid-row: span 3; }
+/* Die erste Textkante fluchtet mit Gebietsueberschrift und Einleitung. */
+.area-topic:first-child { padding-left: 0; }
+.area-topic + .area-topic { border-left: 1px solid color-mix(in srgb, var(--marker) 55%, white); }
+.area-topic-art { width: 100%; height: var(--themenbild); object-fit: contain; margin-bottom: 16px; }
+.area-topic h4 { margin: 0 0 10px; color: var(--tinte); font-size: clamp(18px, 1.45vw, 22px); font-weight: 700; line-height: 1.3; letter-spacing: -.015em; }
+/* Haeufig nachgefragte Leistungen je Thema, seit dem 6. September 2026. Die
+   Punkte teilen sich die Liste der uebrigen Gebiete, stehen in der schmalen
+   Spalte aber eine Spur kleiner und enger. */
+.area-topic .area-topic-points { margin-top: clamp(10px, 1vw, 14px); gap: clamp(7px, .7vw, 10px); }
+.area-topic .area-topic-points li { padding-left: 20px; font-size: clamp(15px, 1.1vw, 17px); line-height: 1.5; }
+.area-topic .area-topic-points li::before { top: calc(.75em - 2px); }
+
+/* Gebiete mit weniger als drei Motiven: Bild links, Themen rechts.
+   Seit dem 6. September 2026, auf Alfreds Wunsch. Der Aufbau aus Bild ueber
+   Ueberschrift ueber Satz braucht drei gefuellte Spalten, um zu tragen. In
+   Schadenersatz und Strafrecht blieb eine Spalte ohne Motiv, und ihre
+   Stichpunkte schwebten in der Zeile, egal ob mittig oder oben buendig
+   ausgerichtet. Jetzt stehen die Motive links beieinander und alle Themen des
+   Gebiets rechts als Stichpunkte; das Themenwort traegt das strong und
+   uebernimmt die Rolle der frueheren Themenueberschrift. Beide Gebiete tragen
+   seit dem 6. September 2026 genau ein Motiv, die Aufteilung ist deshalb in
+   beiden dieselbe. */
+.area-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: clamp(18px, 2vw, 30px); margin-top: clamp(18px, 2vw, 28px); }
+.area-split .area-topic-art { margin-bottom: 0; }
+/* Dieselbe feine Mintlinie wie zwischen den Themenspalten. align-content haelt
+   die Punkte oben buendig; ohne das zoege das Raster sie ueber die volle
+   Bildhoehe auseinander. */
+.area-split .area-topic-points { align-content: start; padding-left: clamp(18px, 2vw, 30px); border-left: 1px solid color-mix(in srgb, var(--marker) 55%, white); }
+.area-topic-points { margin: 0; padding: 0; list-style: none; display: grid; gap: clamp(12px, 1.25vw, 17px); }
+.area-detail > .area-topic-points { margin-top: clamp(18px, 2vw, 28px); }
+.area-topic-points li { position: relative; padding-left: 22px; font-size: clamp(16px, 1.2vw, 18px); line-height: 1.55; }
+/* Dasselbe Quadrat wie in .area-points, damit alle Rechtsgebiete gleich
+   aussehen. Die Zeilenhoehe ist hier 1,55, deshalb .775em statt .75em. */
+.area-topic-points li::before { content: ""; position: absolute; top: calc(.775em - 2px); left: 0; width: 6px; height: 6px; background: #398f88; }
+.area-topic-points strong { color: var(--tinte); font-weight: 700; }
+
+/* Auf schmalen Fenstern folgen die Themen untereinander. Der Absatz behaelt
+   seinen Einzug zur Toggle-Ueberschrift, die Motive bleiben vollstaendig. */
+@media (max-width: 899px) {
+  .area-topics { grid-template-columns: minmax(0, 1fr); gap: 24px; margin-top: 24px; }
+  /* Die Stichpunkte folgen direkt unter der Ueberschrift; nur die letzte Zeile
+     darf wachsen. Duerfte die Ueberschrift wachsen, klaffte zwischen ihr und
+     den Punkten die halbe Bildhoehe. */
+  .area-topic { display: grid; grid-row: auto; grid-template-columns: minmax(110px, .8fr) minmax(0, 1fr); grid-template-rows: auto 1fr; column-gap: 24px; padding: 0; }
+  .area-topic + .area-topic { border-left: 0; border-top: 1px solid color-mix(in srgb, var(--marker) 55%, white); padding-top: 24px; }
+  .area-topic .area-topic-art { grid-column: 2; grid-row: 1 / -1; align-self: center; height: auto; aspect-ratio: 3 / 2; margin: 0; }
+  .area-topic h4, .area-topic .area-topic-points { grid-column: 1; }
+  /* Die Punkte stehen oben buendig. Ohne das zieht die dehnbare letzte Zeile
+     sie ueber die ganze Bildhoehe auseinander, wo das Motiv hoeher ist als die
+     Liste. Dasselbe gilt an .area-split .area-topic-points. */
+  .area-topic .area-topic-points { align-content: start; }
+  /* Nebeneinander ist hier kein Platz: die Motive stehen ueber ihren Punkten,
+     die Trennlinie zwischen beiden entfaellt. */
+  .area-split { grid-template-columns: minmax(0, 1fr); gap: 24px; margin-top: 24px; }
+  .area-split .area-topic-points { padding-left: 0; border-left: 0; }
+  /* Wie die Motive in den Themenspalten: keine feste Hoehe mehr. Die Breite ist
+     gedeckelt, sonst fuellte ein einzelnes Motiv die ganze Spalte und stuende
+     doppelt so gross da wie die Motive im Zivilrecht daneben. */
+  .area-split .area-topic-art { height: auto; aspect-ratio: 3 / 2; width: min(100%, 320px); margin-inline: auto; }
+}
+
+@media (max-width: 540px) {
+  .area-topic { display: block; }
+  .area-topic .area-topic-art { width: min(100%, 320px); margin: 0 auto 14px; }
+}
+
+/* Weiches Aufklappen nur dort, wo der Browser auf eine automatische Hoehe
+   zubewegen kann. Fehlt das, springt der Satz auf; das ist kein Fehler. Die
+   Regel fuer weniger Bewegung am Dateiende schaltet den Uebergang wieder ab. */
+@supports (interpolate-size: allow-keywords) {
+  /* Die Eigenschaft vererbt sich und steht deshalb am Register statt an :root:
+     nur hier soll auf eine automatische Hoehe zubewegt werden duerfen. */
+  .area-register { interpolate-size: allow-keywords; }
+  /* content-visibility muss dieselbe Dauer tragen wie die Hoehe. Bliebe sie
+     kuerzer, schaltete der Browser den Inhalt mitten in der Bewegung ab. */
+  .area-row::details-content { block-size: 0; overflow: hidden; transition: block-size var(--register-dauer) var(--register-kurve), content-visibility var(--register-dauer) allow-discrete; }
+  .area-row[open]::details-content { block-size: auto; }
+}
+
+/* ---------- Abschluss ---------- */
+
+/* Der linke Einzug ist derselbe wie in .areas und im Namensrahmen des Heros,
+   calc(.35 * var(--name)). Damit stehen Schrittfolge, Kontaktzeile und Karte
+   auf einer Senkrechten mit den Ordnungsziffern der Rechtsgebiete, dem Namen
+   und der Navigation; rechts bleibt die Kante buendig mit der Bildflaeche.
+   Vorher trug .closing-inner einen eigenen Innenabstand, der den ganzen Block
+   links um 22 und rechts um 58 Pixel nach innen schob. */
+.closing { margin-inline: calc(50% - 50vw); padding: clamp(48px, 6vw, 92px) calc(50vw - 50%) clamp(48px, 6vw, 92px) calc(50vw - 50% + .35 * var(--name)); background: var(--weiss); }
+/* Nur noch die zentrierte Spalte. Innenabstand und Eckenrundung stammten von
+   einer frueheren getoenten Karte an dieser Stelle; ohne Flaeche waren sie
+   unsichtbar und lagen als zweites Polster auf dem von .closing. Der Abstand
+   zaehlte dadurch doppelt: 273 Pixel zwischen dem letzten Rechtsgebiet und der
+   Beschriftung Kontakt, 173 zwischen Karte und Fusszeile. */
+.closing-inner { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.closing h2 { max-width: 18ch; margin: 0; font-size: clamp(28px, 3.6vw, 52px); font-weight: 700; line-height: 1.08; letter-spacing: -.032em; }
+.closing .lead { max-width: 40ch; }
+.closing .button { margin-top: clamp(24px, 3vw, 40px); }
+
+/* Drei Schritte der Mandantenaufnahme, als getoente Karten mit Ziffernscheibe
+   und Pfeilen dazwischen. Sie stehen in der zentrierten Saeule des
+   Abschlusses, nehmen aber ueber align-self die volle Breite; mittig gesetzte
+   Schrittbeschreibungen waeren nicht mehr zu lesen, deshalb steht der Text in
+   den Karten linksbuendig. Die Ziffer traegt keine Information, die nicht
+   schon in der Reihenfolge der Liste steckt, und ist im Markup aria-hidden.
+
+   Die drei Toene sind keine eigenen Farben, sondern die beiden
+   Marken-Variablen mit anderer Helligkeit: --marker traegt das Tuerkis,
+   --tinte das Blau, beide behalten ihren Farbton und ihre Saettigung und
+   stehen auf 87 Prozent Helligkeit. Die mittlere Karte liegt genau
+   dazwischen, damit die Reihe als Verlauf von Tuerkis nach Blau gelesen wird.
+
+   Wichtig ist dabei die Schreibweise mit hsl(from ...): ein einfaches
+   Aufhellen mit Weiss (color-mix in srgb) nimmt dem Navy die Saettigung, aus
+   64 Prozent werden 21, und die dritte Karte sieht grau statt blau aus. Genau
+   das hat Alfred am 6. September 2026 beanstandet. Wer die Regel wieder auf
+   color-mix umstellt, holt sich das Grau zurueck.
+
+   --stufe-luft ist zugleich der Spaltenabstand und die Rechengrundlage der
+   Pfeile. Wer den Abstand aendert, verschiebt die Pfeile mit; ein fester Wert
+   an einer der beiden Stellen bricht die Flucht. */
+.steps { --stufe-tuerkis: hsl(from var(--marker) h s 87%); --stufe-blau: hsl(from var(--tinte) h s 87%); --stufe-luft: clamp(28px, 3.6vw, 60px); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--stufe-luft); align-self: stretch; width: 100%; margin: clamp(34px, 4vw, 58px) auto 0; padding: 0; list-style: none; text-align: left; }
+/* Die Hoehe kommt aus min-height, nicht aus aspect-ratio. Mit aspect-ratio
+   ergibt sich zwar von selbst das Verhaeltnis des Referenzbildes, aber eine
+   Karte mit einer Zeile mehr Text wird dann hoeher als ihre Nachbarn: eine
+   Kachel mit Seitenverhaeltnis laesst sich im Raster nicht auf die
+   Zeilenhoehe dehnen. Genau das war zwischen 900 und 1100 Pixeln zu sehen.
+   Mit min-height dehnt das Raster alle drei auf dieselbe Hoehe.
+   Die Karte steht hochkant im Verhaeltnis 3 zu 4. Grundlage war das von Alfred
+   am 6. September 2026 verlangte 9 zu 16, davon hat er am selben Tag ein
+   Viertel der Hoehe wieder abgezogen.
+   Die drei Zahlen haengen an der Spaltenbreite und sind nachgerechnet, nicht
+   geschaetzt. Seit die Schrittfolge die volle Abschnittsbreite fuellt, misst
+   eine Spalte 0,278 der Fensterbreite statt 0,26; die Hoehe im Verhaeltnis
+   3 zu 4 ist damit 37,1vw statt 34,5vw, und die Anschlaege 334px und 595px
+   statt 311px und 536px.
+   Der obere Anschlag greift ab rund 1600 Pixeln, wo .page an seiner max-width
+   haengt und die Karte nicht weiter waechst; der untere gilt an der Grenze
+   900px. Wer die Breite des Rasters, --stufe-luft, --rand oder den linken
+   Einzug von .closing aendert, muss die drei Zahlen neu rechnen, sonst stimmt
+   das Verhaeltnis nicht mehr.
+   position: relative traegt die Pfeile, sie haengen an der Karte links davon. */
+.step { --scheibe: clamp(46px, 4.2vw, 64px); --pfeil: clamp(22px, 2vw, 32px); position: relative; display: flex; flex-direction: column; min-height: clamp(334px, 37.1vw, 595px); padding: clamp(24px, 3vw, 46px); border-radius: var(--radius); }
+.step:nth-child(1) { background: var(--stufe-tuerkis); }
+.step:nth-child(2) { background: color-mix(in srgb, var(--stufe-tuerkis) 50%, var(--stufe-blau)); }
+.step:nth-child(3) { background: var(--stufe-blau); }
+/* Die Ziffer steht als weisse Schrift auf einer dunklen Scheibe, nicht mehr
+   als grosse helle Zahl. Weiss auf --tinte kommt in beiden Farbfassungen weit
+   ueber 10 zu 1. Die Scheibe darf nicht schrumpfen, wenn die Ueberschrift
+   umbricht, daher flex: none. */
+.step-num { display: inline-flex; flex: none; align-items: center; justify-content: center; width: var(--scheibe); height: var(--scheibe); border-radius: 999px; background: var(--tinte); color: var(--weiss); font-size: clamp(15px, 1.35vw, 20px); font-weight: 700; line-height: 1; letter-spacing: -.01em; }
+/* Ziffer oben, darunter mit gleich viel Luft wie der Innenabstand die
+   Ueberschrift und der Satz. Die freie Hoehe bleibt unten stehen.
+   Der Abstand ist bewusst fest und nicht margin-top: auto. Mit auto haengt der
+   Block am Fuss der Karte, und sobald ein Satz eine Zeile mehr umbricht als
+   sein Nachbar, steht seine Ueberschrift hoeher als die der anderen beiden.
+   Das war bei 1024 Pixeln deutlich zu sehen. Mit dem festen Abstand fluchten
+   die drei Ueberschriften in jeder Breite. */
+.step h3 { margin: clamp(24px, 3vw, 46px) 0 clamp(9px, .9vw, 14px); color: var(--tinte); font-size: clamp(19px, 1.7vw, 26px); font-weight: 700; line-height: 1.25; letter-spacing: -.018em; }
+/* Der Satz steht im vollen --tinte, nicht im leisen Ton: auf der getoenten
+   Flaeche kommt --tinte-leise nur noch knapp auf 4,5 zu 1. */
+.step p { max-width: 26ch; margin: 0; color: var(--tinte); font-size: clamp(15px, 1.2vw, 18px); line-height: 1.55; }
+
+/* Die Pfeile zwischen den Karten sind zwei Pseudoelemente statt eigener
+   Zeichen: ::before ist der Schaft, ::after die Spitze aus zwei gedrehten
+   Rahmenlinien. Ein Textpfeil waere von der Schriftdatei abhaengig, die nur
+   den gebrauchten Zeichenvorrat enthaelt, und ein SVG waere zusaetzliches
+   Markup in einer Liste, die nur <li> enthalten darf. Beide sitzen in der
+   Spaltenluft rechts der Karte und sind rein schmueckend.
+
+   Die Geometrie stammt aus der Ueberarbeitung vom 6. September 2026. Drei
+   Dinge sind daran wichtig:
+   - Die Spitze ist so gross, dass man sie als Spitze liest: 0,4 der
+     Schaftlaenge statt frueher fester 10px, die bei 28px Schaft verloren
+     wirkten. Sie waechst damit mit --pfeil mit.
+   - Der Strich ist duenner, 1,5px statt 2px, und traegt runde Enden ueber
+     border-radius. Der Pfeil steht dadurch neben den fetten Ueberschriften
+     nicht mehr wie ein Balken.
+   - translate: -121% -50% setzt die Spitze genau ans Schaftende. Die Rechnung:
+     translate verschiebt um einen Anteil der eigenen Breite, ab der linken
+     Kante. Bis zur Mitte sind es 50 Prozent, und eine um 45 Grad gedrehte Ecke
+     ragt um das 0,707-fache der Seitenlaenge ueber diese Mitte hinaus, macht
+     zusammen 120,7 Prozent. Frueher stand dort -50%; dann sass nur die Mitte
+     der Spitze am Schaftende, die Spitze selbst schoss darueber hinaus und
+     stand als eigenes Zeichen neben dem Strich. Der Wert bleibt richtig, wenn
+     man die Spitze groesser oder kleiner macht, er ist ein Anteil ihrer
+     eigenen Breite. */
+.step:not(:last-child)::before,
+.step:not(:last-child)::after { content: ""; position: absolute; top: 50%; color: var(--tinte); }
+.step:not(:last-child)::before { left: calc(100% + var(--stufe-luft) / 2); width: var(--pfeil); height: 1.5px; border-radius: 1px; background: currentColor; translate: -50% -50%; }
+.step:not(:last-child)::after { left: calc(100% + var(--stufe-luft) / 2 + var(--pfeil) / 2); width: calc(var(--pfeil) * .5); height: calc(var(--pfeil) * .5); border-top: 1.5px solid currentColor; border-right: 1.5px solid currentColor; border-top-right-radius: 2px; translate: -121% -50%; rotate: 45deg; }
+
+/* Der Hinweis auf das Honorar steht leise unter den Karten und vor der
+   Schaltflaeche. Der Link traegt das volle --tinte, damit er sich vom
+   Satz ringsum abhebt. */
+.steps-note { margin: clamp(20px, 2.4vw, 32px) 0 0; color: var(--tinte-leise); font-size: clamp(14px, 1.05vw, 16px); line-height: 1.6; }
+.steps-note a { color: var(--tinte); font-weight: 500; transition: color .2s ease; }
+.steps-note a:hover { color: var(--akzent-tief); }
+
+/* ---------- Kontaktangaben mit Karte ---------- */
+
+/* Steht unter der Schrittfolge im selben Raster wie sie: dieselbe Breite,
+   derselbe Abstand nach oben. Aufbau von oben nach unten: dreispaltige
+   Angabenzeile, Einladungssatz, Karte ueber die volle Breite.
+   Die erste Fassung stellte die Angaben links neben eine hochkante Karte.
+   Alfred hat sie am 6. September 2026 verworfen: die schmale Textspalte stand
+   verloren neben der bunten Karte, und die Karte war zu klein, um etwas zu
+   zeigen. Uebereinander nutzt beides die ganze Breite.
+   text-align: left hebt die zentrierte Ausrichtung von .closing-inner auf, die
+   fuer Ueberschrift und Schaltflaeche gilt, fuer eine Adresse aber nicht. */
+.kontakt-block { align-self: stretch; width: 100%; margin: clamp(40px, 4.6vw, 72px) auto 0; text-align: left; }
+/* Gebaut wie .hero-contact: feine Linie darueber, gesperrte Beschriftung,
+   Wert darunter. Drei gleiche Spalten statt eines Umbruchs, damit die
+   Beschriftungen auf einer Linie stehen. */
+.kontakt-daten { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(22px, 2.4vw, 40px); padding-top: clamp(22px, 2.4vw, 32px); border-top: 1px solid var(--linie); font-style: normal; }
+.kontakt-label { display: block; margin-bottom: clamp(6px, .7vw, 10px); color: var(--tinte-leise); font-size: clamp(10px, .8vw, 12px); font-weight: 500; letter-spacing: .14em; text-transform: uppercase; }
+.kontakt-daten a { font-size: clamp(16px, 1.35vw, 21px); font-weight: 500; line-height: 1.4; letter-spacing: -.012em; overflow-wrap: anywhere; transition: color .2s ease; }
+.kontakt-daten a:hover { color: var(--akzent-tief); }
+.kontakt-map-link { display: inline-flex; align-items: center; gap: .38em; max-width: 100%; }
+.kontakt-map-link span { min-width: 0; }
+.kontakt-map-link svg { flex: none; width: .9em; height: .9em; }
+.kontakt-besuch { max-width: 56ch; margin: clamp(20px, 2.2vw, 32px) 0 clamp(26px, 3vw, 44px); color: var(--tinte-leise); font-size: clamp(14px, 1.05vw, 16px); line-height: 1.6; }
+
+/* Die Karte ist ein liegendes Band, kein Kaestchen. Erst in dieser Breite ist
+   der Weg von der Adresse zum Schwedenplatz zu erkennen; das quadratische
+   Fenster der ersten Fassung zeigte drei Gassen.
+
+   Drei Dinge am Einbau sind nicht offensichtlich:
+   - **Als q stehen Koordinaten, nicht die Adresse.** Uebergibt man Google die
+     Adresse als Suchwort, blendet der Einbau oben links eine Infokarte mit
+     Adresse und zwei Schaltflaechen ein. Mit Koordinaten bleibt nur die Nadel.
+     Die Werte kommen aus Nominatim fuer Salztorgasse 7, 1010 Wien. Wer wieder
+     die Adresse einsetzt, holt sich die Infokarte zurueck.
+     Der Parameter iwloc, den man dafuer im Netz findet, wirkt nicht mehr;
+     iwloc=near und iwloc=B sind am 6. September 2026 gemessen worden und
+     aendern nichts.
+   - **Das Satellitenbild unten links wird weggeschnitten.** Diese Umschaltung
+     laesst sich ueber die Adresse nicht abschalten. Das iframe ist deshalb um
+     --karte-schnitt breiter als sein Rahmen und um denselben Betrag nach links
+     geschoben; der Rahmen schneidet mit overflow: hidden ab. 60px reichen: das
+     Bildchen sitzt rund 11 bis 48 Pixel vom linken Rand. Die Nachweise von
+     Google, also der Schriftzug und die Zeile mit Kartendaten und
+     Nutzungsbedingungen, liegen 339 Pixel und weiter rechts und bleiben
+     sichtbar. Mehr darf hier nicht abgeschnitten werden, die Nachweise sind
+     Bedingung der Nutzung.
+   - **Die Hoehe kommt aus aspect-ratio**, hier ist das unbedenklich: das Band
+     steht allein in seiner Zeile und muss sich mit nichts auf eine Hoehe
+     einigen, anders als die drei Schrittkarten weiter oben.
+   background traegt die Flaeche, solange die Karte laedt oder wenn sie
+   blockiert ist. */
+.kontakt-karte { --karte-schnitt: 60px; position: relative; overflow: hidden; margin-top: clamp(26px, 3vw, 44px); aspect-ratio: 16 / 5; min-height: clamp(220px, 18vw, 300px); border-radius: var(--radius); background: var(--linie); }
+/* Google zeigt beim Scrollen ueber einem interaktiven iframe seinen eigenen
+   Hinweis. Die Karte ist hier eine Standortansicht, die Adresse darueber
+   oeffnet Google Maps bei Bedarf, deshalb faengt das iframe keine Maus- oder
+   Touch-Eingaben ab. */
+.kontakt-karte iframe { position: absolute; top: 0; left: calc(-1 * var(--karte-schnitt)); width: calc(100% + var(--karte-schnitt)); height: 100%; border: 0; pointer-events: none; }
+
+/* Unter 900 Pixeln passt der Text nicht mehr in die liegende Karte: sie waere
+   dann hoeher als breit und die Form ginge verloren. Die Schritte folgen ab
+   dort untereinander, und die Mindesthoehe faellt weg, denn ueber die volle
+   Breite waere sie ein halber Bildschirm Luft. Dieselbe Grenze wie bei den
+   Themen im Register. Die Pfeile drehen sich mit und zeigen nach unten. */
+@media (max-width: 899px) {
+  .steps { grid-template-columns: minmax(0, 1fr); --stufe-luft: clamp(30px, 5vw, 44px); }
+  .step { min-height: 0; }
+  .step h3 { margin-top: clamp(16px, 3vw, 24px); }
+  .step p { max-width: none; }
+  .step:not(:last-child)::before { top: calc(100% + var(--stufe-luft) / 2); left: 50%; width: 1.5px; height: var(--pfeil); }
+  /* Dieselbe Rechnung wie waagrecht, nur um eine Achse gedreht: die 120,7
+     Prozent wandern von der x- auf die y-Achse, damit die Spitze am
+     Schaftende sitzt. */
+  .step:not(:last-child)::after { top: calc(100% + var(--stufe-luft) / 2 + var(--pfeil) / 2); left: 50%; translate: -50% -121%; rotate: 135deg; }
+  /* Drei Angaben nebeneinander waeren hier je gut 100 Pixel breit, die
+     E-Mail-Adresse braeuchte drei Zeilen. Sie stehen deshalb untereinander.
+     Das Band wird zugleich hoeher: ueber die schmale Breite zeigte 16 zu 5
+     nur noch einen Streifen. */
+  .kontakt-daten { grid-template-columns: minmax(0, 1fr); gap: clamp(18px, 3.4vw, 26px); }
+  .kontakt-karte { aspect-ratio: 4 / 3; }
+}
+
+/* ---------- Footer ---------- */
+
+/* Die Fusszeile steht seit dem 6. September 2026 auf einer eigenen dunkelblauen
+   Flaeche mit weisser Schrift. Sie laeuft wie die Abschlussflaeche und die
+   Rechtsflaeche ueber die volle Fensterbreite, dieselbe Rechnung aus
+   margin-inline und padding-inline: ein Band, das vor dem Fensterrand aufhoert,
+   saehe aus wie ein Fehler. Die Farbe trennt sie von der Flaeche darueber,
+   deshalb traegt sie weiterhin keine eigene Linie, nur Luft.
+   Name links, Pflichtangaben rechts; auf schmalen Fenstern bricht die Reihe um
+   und beides steht untereinander.
+   Der linke Einzug ist derselbe wie im Kopf, calc(.35 * var(--name)): der Name
+   stand vorher an der blossen Seitenkante und damit eine Stufe weiter links
+   als Navigation, Hero und Rechtsgebiete. Er steht jetzt im Einzug der Flaeche,
+   deshalb die Summe aus beidem. Rechts bleibt es beim Rand der Seite, dort
+   fluchten die Links mit den Pluszeichen des Registers.
+   Die Flaeche ist seit dem 6. September 2026 halb so hoch, auf Wunsch von
+   Alfred. Nicht das Polster wurde halbiert, sondern die gemessene Hoehe: die
+   Zeile selbst braucht 27 Pixel, die bleiben. Aus 123 Pixeln bei 1440 Pixeln
+   Fensterbreite wurden so 62, das Polster ging dafuer von 46/50 auf 17/18.
+   Wer hier schraubt, misst nach und rechnet die Zeilenhoehe mit. */
+.site-footer { margin-inline: calc(50% - 50vw); padding: clamp(14px, 1.2vw, 17px) calc(50vw - 50%) clamp(14px, 1.2vw, 18px) calc(50vw - 50% + .35 * var(--name)); background: var(--fusszeile); color: var(--fusszeile-schrift); font-size: clamp(13px, 1vw, 15px); }
+/* Der Fokusring der Seite steht im --akzent-tief, das in der Mintfassung genau
+   das Blau der Fusszeile ist und dort verschwaende. Auf dieser Flaeche ist er
+   deshalb weiss. */
+.site-footer :focus-visible { outline-color: var(--fusszeile-schrift); }
+.footer-meta { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 10px clamp(24px, 3vw, 48px); }
+/* Die Jahreszeile ist eine Pflichtangabe und kein Ziel, sie steht deshalb
+   leiser als die zwei Links: gebrochenes Weiss statt vollem. */
+.footer-name { margin: 0; color: rgb(255 255 255 / 74%); }
+.legal-nav { display: flex; gap: clamp(18px, 2.2vw, 32px); }
+/* Ohne Hovereffekt, seit dem 6. September 2026 auf Wunsch von Alfred. Die
+   frueheren Regeln zogen beim Ueberfahren eine Unterstreichung auf; sie sind
+   entfernt, die Links bleiben in Ruhe. Die Tastaturbedienung ist davon nicht
+   betroffen, der Fokusring steht weiter oben in .site-footer :focus-visible. */
+.legal-nav a { padding-block: 3px; }
+
+/* ---------- Rechtsseiten ----------
+   Eigene Seite fuer das Impressum, Aufbau nach dem Muster von
+   verlassenschaftsverfahren.at: Ueberschrift, Rechtsgrundlage als leise Zeile,
+   darunter eine zweispaltige Beschreibungsliste. Die Bezeichnung steht links in
+   fester Spaltenbreite, die Angabe rechts, jede Zeile mit Haarlinie darunter,
+   die letzte ohne. Auf schmalen Fenstern stehen beide untereinander. */
+
+/* Die Einleitung nimmt den Takt der Startseite auf: Beschriftung, grosse
+   Ueberschrift mit der Mint-Unterstreichung, ein leiser Satz darunter. Sie
+   steht auf dem Papierton wie der Hero.
+   Alles auf dieser Seite ist mittig gesetzt, wie der Abschluss der Startseite.
+   Der Einzug calc(.35 * var(--name)) des Heros faellt deshalb weg, er wuerde
+   die Mitte verschieben. */
+.legal-intro { padding: clamp(20px, 2.6vw, 44px) 0 clamp(40px, 5vw, 78px); text-align: center; }
+.legal-intro h1 { max-width: 16ch; margin-inline: auto; margin-block: 0; font-size: clamp(38px, 5.2vw, 76px); font-weight: 700; line-height: 1.16; letter-spacing: -.032em; }
+.legal-intro .lead { max-width: 48ch; margin-inline: auto; }
+
+/* Die Angaben stehen auf einer weissen Flaeche ueber die volle Fensterbreite,
+   genau wie die Rechtsgebiete auf der Startseite. Die Flaeche selbst ist
+   symmetrisch, die Tabelle darin mittig; die Zeilen bleiben zweispaltig und
+   linksbuendig, mittig gesetzte Bezeichnungen und Angaben waeren nicht mehr
+   zu lesen. */
+.legal-body { margin-inline: calc(50% - 50vw); padding: clamp(48px, 6vw, 92px) calc(50vw - 50%) clamp(56px, 7vw, 104px); background: var(--weiss); text-align: center; }
+.legal-body h2 { margin: clamp(40px, 5vw, 72px) 0 clamp(10px, 1.2vw, 16px); font-size: clamp(20px, 1.8vw, 26px); font-weight: 700; letter-spacing: -.02em; }
+/* Die Honorarmodelle stehen als direkte Ueberschrift ueber ihrer Liste. Sie
+   teilen deren linke Kante und die Breite von 860 Pixeln, die folgenden
+   Unterabschnitte bleiben in .legal-text gebuendelt. */
+.legal-body > h2 { max-width: 860px; margin-inline: auto; text-align: left; }
+/* Fliesstext der Rechtsseite: seit den Abschnitten Berufsrecht und
+   Urheberrecht stehen Absaetze auch ohne Ueberschrift darueber, deshalb gilt
+   die Regel fuer jeden Absatz und nicht mehr nur fuer den nach einem h2. */
+.legal-body p { max-width: 62ch; margin: 0 auto; color: var(--tinte-leise); line-height: 1.7; }
+.legal-body p + p { margin-top: clamp(12px, 1.2vw, 18px); }
+
+/* Der Fliesstext des Impressums steht linksbuendig und mit seiner linken Kante
+   auf der Angabenliste darueber, deshalb dieselben 860 Pixel. Mittig gesetzt
+   war er schwer zu lesen und haing optisch neben der Liste. Die Absaetze
+   bleiben bei 72 Zeichen, ueber die vollen 860 Pixel waere die Zeile zu lang.
+   Die Honorarseite nutzt dieselbe Huelle fuer die Abschnitte nach den
+   Honorarmodellen, aus demselben Grund; auch die Ueberschrift der
+   Honorarmodelle steht auf der linken Kante der Liste. */
+.legal-text { max-width: 860px; margin: 0 auto; text-align: left; }
+.legal-text p { max-width: 72ch; margin-inline: 0; }
+.impressum-meta + .legal-text { margin-top: clamp(30px, 3.4vw, 48px); }
+.legal-body p a { color: var(--tinte); font-weight: 500; transition: color .2s ease; }
+.legal-body p a:hover { color: var(--akzent-tief); }
+
+.impressum-meta { max-width: 860px; margin: 0 auto; font-size: clamp(14px, 1.1vw, 16px); text-align: left; }
+.impressum-meta-row { display: grid; grid-template-columns: minmax(170px, 34%) minmax(0, 1fr); align-items: baseline; gap: clamp(14px, 1.6vw, 24px); padding: clamp(11px, 1.2vw, 15px) 0; border-bottom: 1px solid var(--linie); }
+.impressum-meta-row:last-child { border-bottom: 0; }
+/* Die Angabe zur Verantwortung ist kein Kontaktdatum mehr, sondern eine
+   Fussnote der Seite. Sie bekommt deshalb Luft und eine leisere Bezeichnung. */
+.impressum-meta-row-abstand { padding-top: clamp(18px, 2vw, 26px); }
+.impressum-meta-row-leise dt { color: var(--tinte-leise); }
+.impressum-meta-row-webdesign { align-items: center; }
+.impressum-meta dt { margin: 0; font-weight: 500; line-height: 1.45; }
+.impressum-meta dd { margin: 0; color: var(--tinte-leise); line-height: 1.7; overflow-wrap: anywhere; }
+.impressum-meta-ref { display: block; margin-top: 3px; color: var(--tinte-still); font-size: .82em; font-weight: 400; letter-spacing: 0; }
+/* Die Zeile Webdesign traegt das Logo ueber dem Namen. Auf der weissen Flaeche
+   gilt die Fassung on-light des Markenpakets, die weisse oder die helle
+   Fassung waere dort nicht zu sehen. 150 Pixel liegen ueber den 120 Pixeln,
+   unter denen laut Markenpaket die Zeile COMPILE nicht mehr traegt. */
+.impressum-webdesign { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 9px; }
+.impressum-webdesign img { width: 150px; height: auto; }
+.impressum-meta a { color: var(--tinte); font-weight: 500; transition: color .2s ease; }
+.impressum-meta a:hover { color: var(--akzent-tief); }
+
+/* Kleingedrucktes unter der Angabenliste: Barauslagen und Umsatzsteuer der
+   Honorarseite. Es steht linksbuendig auf der linken Kante der Liste darueber,
+   deshalb dieselben 860 Pixel wie .impressum-meta und .legal-text. Die Regel
+   nennt .legal-body mit, sonst gewinnt .legal-body p mit seiner hoeheren
+   Spezifitaet und der Absatz stuende wieder mittig. --tinte-still waere fuer
+   diese Groesse zu blass, --tinte-leise haelt 4,8 zu 1 auf Weiss. */
+.legal-body .legal-kleingedruckt { max-width: 860px; margin: clamp(16px, 1.8vw, 24px) auto 0; color: var(--tinte-leise); font-size: clamp(12px, .95vw, 14px); line-height: 1.6; text-align: left; }
+.legal-kleingedruckt + .legal-text { margin-top: clamp(30px, 3.4vw, 48px); }
+
+/* Hervorgehobene Woerter im Fliesstext der Rechtsseiten, seit dem
+   6. September 2026 fuer Dauer und Preis des Erstgespraechs auf der
+   Honorarseite. Sie folgen der Regel, die auf der Startseite schon fuer die
+   Themenworte der Rechtsgebiete gilt: volles --tinte und Schnitt 700,
+   waehrend der Satz ringsum im leisen --tinte-leise und im Grundschnitt
+   liegt. Damit heben sie sich auch von den Links ab, die im vollen --tinte,
+   aber nur im Schnitt 500 stehen. */
+.legal-body p strong { color: var(--tinte); font-weight: 700; }
+
+/* Kurzer Trenner im Fliesstext, seit dem 6. September 2026 zwischen der
+   Einleitung und der Angabe zum Erstgespraech. Er nimmt das Mint der
+   Unterstreichung unter „Honorar.“ auf, damit die Seite ihr eigenes Zeichen
+   wiederholt statt ein neues einzufuehren. Kurz und linksbuendig, eine Linie
+   ueber die volle Spalte waere eine Abschnittsgrenze, und die beiden Absaetze
+   gehoeren zusammen. */
+.legal-trenner { width: 48px; height: 3px; margin: clamp(20px, 2.2vw, 28px) 0; border: 0; border-radius: 2px; background: var(--marker); }
+
+/* ---------- Ueber mich ----------
+   Zentriertes Originalportraet vor dem vollstaendigen Gemaelde.
+   Das Gemaelde behaelt sein Originalformat (1198 x 828) mit Freiraum
+   rundherum. Es liegt vollstaendig und unverzerrt hinter der Person.
+   margin-inline zieht die Flaeche bis an die Fensterkanten. */
+.about-page { background: var(--weiss); }
+.about-banner { position: relative; isolation: isolate; height: clamp(420px, 42vw, 680px); margin-inline: calc(50% - 50vw); overflow: clip; background: #fff; }
+/* Luftige Galerie: Bildformat und Hoehe wachsen gemeinsam mit der Breite.
+   Die Aquarellspuren stehen ausserhalb des Gemaeldes, kein Bilderrahmen. */
+.about-banner-bild { position: absolute; left: 50%; top: 24px; display: block; width: min(58vw, 940px); height: auto; object-fit: contain; transform: translateX(-50%); }
+/* Eigenes dekoratives Bild hinter den Originalen. Die weisse Mitte bleibt
+   leer; kein generiertes Portraet und keine Textbestandteile im Hintergrund. */
+.about-banner::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: url("assets/images/ueber-mich-farbspuren.webp") center / 100% 100% no-repeat; opacity: .7; }
+
+/* Die Maske betrifft nur Transparenz, die Bildpunkte stammen aus dem Foto.
+   Eine eigene Ebene stellt die Person vor das spaeter im HTML folgende Bild.
+   Gleicher proportionaler Aufbau auf Desktop und Mobilgeraeten. */
+.about-banner-portraet { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.about-banner-portraet img { position: absolute; left: 50%; bottom: 0; width: auto; max-width: 86%; height: 100%; object-fit: contain; object-position: center bottom; transform: translateX(-50%); }
+
+/* Feiner Nebel am unteren Bildrand. Getrennte Masken folgen den beiden
+   Bildkanten auch mobil. Die Originaldateien und ihre Proportionen bleiben
+   unveraendert; Gesicht und Haende liegen oberhalb des Uebergangs. */
+.about-banner-bild {
+  -webkit-mask-image: linear-gradient(to bottom, #000 72%, rgb(0 0 0 / .94) 79%, rgb(0 0 0 / .55) 88%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 72%, rgb(0 0 0 / .94) 79%, rgb(0 0 0 / .55) 88%, transparent 100%);
+}
+.about-banner-portraet img {
+  -webkit-mask-image: linear-gradient(to bottom, #000 84%, rgb(0 0 0 / .96) 88%, rgb(0 0 0 / .55) 94%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 84%, rgb(0 0 0 / .96) 88%, rgb(0 0 0 / .55) 94%, transparent 100%);
+}
+.about-banner::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  inset: auto 0 0;
+  height: 16%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 20% 74%, rgb(255 255 255 / .8), rgb(255 255 255 / .35) 34%, transparent 68%),
+    radial-gradient(ellipse at 79% 63%, rgb(255 255 255 / .7), rgb(255 255 255 / .2) 38%, transparent 70%),
+    linear-gradient(to bottom, transparent 38%, rgb(255 255 255 / .4) 72%, #fff 100%);
+}
+
+/* Der Abschluss braucht auf dieser Seite Abstand zur kurzen Einleitung,
+   sonst setzt die dunkle Fusszeile unmittelbar unter dem Text an. */
+.about-intro { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(40px, 8.2vw, 130px); width: min(1040px, 76vw); max-width: 100%; margin: 20px auto clamp(64px, 7vw, 112px); color: var(--tinte); }
+.about-intro p { margin: 0; }
+.about-intro-lead { max-width: 430px; font-size: clamp(28px, 2.27vw, 36px); line-height: 1.38; font-weight: 500; letter-spacing: -.025em; }
+.about-intro-text { padding-top: 7px; font-size: clamp(17px, 1.26vw, 20px); line-height: 1.6; }
+
+@media (max-width: 899px) {
+  .about-banner { height: clamp(380px, 116vw, 560px); }
+  .about-banner-bild { top: 24%; width: auto; height: min(76%, calc(88vw * 828 / 1198)); max-width: 88%; }
+  .about-banner-portraet img { height: 96%; }
+  .about-banner::before { display: none; }
+  .about-intro { grid-template-columns: 1fr; gap: 22px; width: min(620px, 100%); margin-top: 26px; }
+  .about-intro-lead { max-width: 24ch; }
+  .about-intro-text { padding-top: 0; }
+}
+
+/* Sichtbarer Text ist im Hero nicht gewuenscht. Das h1 bleibt fuer
+   Vorlesegeraete und Suchmaschinen zugaenglich. */
+.nur-fuer-vorlesen { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+/* ---------- Dialoge ---------- */
+
+dialog {
+  width: min(600px, calc(100% - 32px)); max-height: calc(100svh - 48px); margin: auto; padding: 0;
+  border: 0; border-radius: 20px; background: var(--papier); color: var(--tinte);
+  box-shadow: 0 40px 80px -40px rgb(53 49 44 / 42%), 0 2px 10px rgb(53 49 44 / 8%);
+  overflow: auto; overscroll-behavior: contain;
+}
+dialog:focus { outline: none; }   /* der Dialog selbst nimmt beim Oeffnen den Fokus, sein Rahmen waere nur Rauschen */
+dialog::backdrop { background: rgb(53 49 44 / 38%); backdrop-filter: blur(7px); }
+dialog[open] { animation: dialog-enter .26s cubic-bezier(.22, 1, .36, 1); }
+dialog[open]::backdrop { animation: backdrop-enter .26s ease-out; }
+body:has(dialog[open]) { overflow: hidden; }
+
+.dialog-content { position: relative; padding: 60px 46px 46px; }
+.close-dialog { position: absolute; display: grid; place-items: center; width: 44px; height: 44px; top: 14px; right: 14px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--tinte-leise); transition: background .2s ease, color .2s ease; }
+.close-dialog:hover { background: var(--bild); color: var(--tinte); }
+.dialog-label { margin: 0 0 18px; color: var(--akzent-tiefer); text-transform: uppercase; letter-spacing: .16em; font-size: 12px; font-weight: 500; }
+dialog h2 { margin: 0; font-size: clamp(28px, 3.2vw, 38px); font-weight: 700; letter-spacing: -.032em; line-height: 1.1; text-wrap: balance; }
+.dialog-intro { margin: 22px 0 24px; max-width: 390px; color: var(--tinte-leise); font-size: 15px; line-height: 1.7; }
+.dialog-content .button { margin-top: 4px; }
+
+.practice-details { margin: 34px 0; }
+.practice-details section { padding: 20px 0; border-top: 1px solid var(--linie); }
+.practice-details h3 { font-size: 16px; margin: 0 0 8px; font-weight: 700; letter-spacing: -.015em; }
+.practice-details p { margin: 0; color: var(--tinte-leise); font-size: 14px; line-height: 1.7; max-width: 46ch; }
+
+.contact-options a { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 24px 40px 24px 0; border-top: 1px solid var(--linie); transition: color .2s ease; }
+.contact-options a:last-child { border-bottom: 1px solid var(--linie); }
+.contact-options a > span { color: var(--tinte-still); font-size: 12px; letter-spacing: .04em; }
+.contact-options strong { font-weight: 400; font-size: clamp(17px, 4.8vw, 22px); overflow-wrap: anywhere; }
+.contact-options svg { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); transition: transform .22s ease; }
+.contact-options a:hover { color: var(--akzent-tief); }
+.contact-options a:hover svg { transform: translate(2px, calc(-50% - 2px)); }
+.office-address { margin-top: 30px; color: var(--tinte-leise); font-size: 13px; line-height: 1.9; font-style: normal; }
+.office-address strong { font-weight: 500; color: var(--tinte); }
+
+.legal-content h2 { margin-bottom: 30px; }
+.legal-content h3 { margin-top: 30px; font-size: 15px; font-weight: 700; letter-spacing: -.015em; }
+.legal-content p, .legal-content address { color: var(--tinte-leise); font-size: 14px; line-height: 1.75; max-width: 56ch; font-style: normal; }
+.legal-content a { color: var(--tinte); font-weight: 500; overflow-wrap: anywhere; }
+.legal-content a:hover { color: var(--akzent-tief); }
+
+/* ---------- Vollbildmenue ----------
+   Das Hauptmenue der schmalen Fenster ist derselbe native Dialog wie die
+   uebrigen Inhalte, nur ueber die ganze Flaeche gezogen. Damit gelten Escape,
+   Fokusfalle und das Stillegen des Hintergrunds unveraendert, ohne eigenen
+   Code. Alle Masse ueberschreiben die Karte aus dem Block darueber; die Klasse
+   gewinnt gegen den Elementselektor, die Reihenfolge im Blatt spielt keine
+   Rolle. */
+
+.menu-dialog { width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; border-radius: 0; box-shadow: none; overscroll-behavior: contain; }
+.menu-dialog::backdrop { background: none; backdrop-filter: none; }
+/* Kein Hochschieben wie bei der Karte: eine ganze Flaeche, die sich bewegt,
+   wirkt unruhig. Sie blendet nur auf. */
+.menu-dialog[open] { animation: menu-enter .2s ease-out; }
+@keyframes menu-enter { from { opacity: 0; } to { opacity: 1; } }
+
+/* min-height statt height: bei sehr niedrigen Fenstern, etwa einem quer
+   gehaltenen Telefon, darf der Inhalt ueber die Flaeche hinauswachsen und der
+   Dialog scrollen. */
+.menu-content { position: relative; display: flex; flex-direction: column; min-height: 100%; padding: calc(var(--seitenluft) + var(--kopf) + clamp(12px, 2.4vw, 20px)) var(--rand) clamp(28px, 6vw, 44px); }
+/* Dieselbe Stelle wie der Hamburger: rechte Textkante der Seite, Mitte auf der
+   Waagerechten der Kopfzeile. */
+.menu-close { position: absolute; top: var(--seitenluft); right: var(--rand); display: grid; place-items: center; width: 44px; height: var(--kopf); padding: 0; border: 0; background: transparent; color: var(--tinte); cursor: pointer; }
+
+/* Die Punkte stehen im Schnitt der grossen Ueberschriften, eine Stufe unter
+   "Klarheit fuer Ihr Anliegen." Die Linien sind dieselben Haarlinien wie im
+   Register der Rechtsgebiete. Die Zeilenhoehe von rund 60 Pixeln liegt weit
+   ueber dem Mindestmass fuer Beruehrflaechen. */
+/* margin-block: auto stellt die Punkte in die Senkrechte Mitte. Der obere
+   Innenabstand des Inhalts haelt dabei die Kopfhoehe frei, sonst laege der
+   erste Punkt unter dem Kreuz. Reicht die Fensterhoehe nicht, faellt der
+   automatische Abstand auf null und der Dialog scrollt. */
+.menu-nav { display: flex; flex-direction: column; margin-block: auto; }
+.menu-nav a { padding-block: clamp(15px, 3.4vw, 22px); border-bottom: 1px solid var(--linie); font-size: clamp(28px, 7.6vw, 40px); font-weight: 700; line-height: 1.15; letter-spacing: -.03em; }
+.menu-nav a:first-child { border-top: 1px solid var(--linie); }
+
+/* Impressum und Datenschutz stehen leise am Fuss des Menues, wie in der
+   Fusszeile der Seite. Sie folgen direkt auf die Punkte; an die Unterkante
+   drueckt sie der automatische Abstand der Punkte darueber. */
+.menu-legal { display: flex; flex-wrap: wrap; gap: 4px clamp(20px, 6vw, 34px); padding-top: clamp(30px, 8vw, 52px); color: var(--tinte-leise); font-size: clamp(14px, 1.05vw, 16px); font-weight: 500; }
+.menu-legal a { padding-block: 11px; transition: color .2s ease; }
+.menu-legal a:hover { color: var(--akzent-tief); }
+
+@keyframes dialog-enter { from { opacity: 0; transform: translateY(10px) scale(.99); } to { opacity: 1; transform: none; } }
+@keyframes backdrop-enter { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---------- Ohne JavaScript ----------
+   Das Inline-Skript im Head setzt .js sofort. Faellt JavaScript aus, bleiben
+   die verbliebenen Dialoge Rechtsgebiete und Kontakt ueber die Adresszeile
+   erreichbar: der angesprochene Dialog wird als normaler Abschnitt angezeigt.
+   Impressum und Datenschutz sind seit dem 6. September 2026 eigene Seiten und
+   brauchen den Notweg nicht mehr. */
+
+html:not(.js) dialog:target { display: block; position: static; width: auto; max-width: 640px; max-height: none; margin: 0 auto clamp(40px, 8vw, 80px); box-shadow: none; border-top: 1px solid var(--linie); border-radius: 0; }
+html:not(.js) dialog:target .close-dialog { display: none; }
+html:not(.js) dialog:target .dialog-content { padding-top: 44px; }
+
+/* ---------- Auftritt der Seite ----------
+   Nur die Textgruppe des Hero wird eingeblendet. Das Portraet erscheint sofort,
+   damit der groesste sichtbare Inhalt nicht kuenstlich verzoegert wird. */
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-copy > * { animation: rise .55s cubic-bezier(.22, 1, .36, 1) backwards; }
+  .hero-copy .hero-frame { animation-delay: .06s; }
+  .hero-copy > .lead { animation-delay: .2s; }
+  .hero-copy > .hero-contact { animation-delay: .26s; }
+  .site-header { animation: rise .55s cubic-bezier(.22, 1, .36, 1) backwards; }
+}
+
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Schmale Fenster ----------
+   Unter 900 px stehen Text und Bild untereinander. Die Bildflaeche verliert den
+   negativen Aussenabstand, sonst schoebe sie sich unter den Kopf. */
+
+@media (max-width: 899px) {
+  /* Auch hier eine ganze Fensterhoehe. Die Reihen bleiben inhaltshoch,
+     uebrige Hoehe sammelt sich oben, damit die Bildflaeche unten buendig
+     abschliesst. Reicht der Platz nicht, waechst der Hero wie bisher. */
+  .hero { grid-template-columns: minmax(0, 1fr); gap: clamp(28px, 5vw, 44px); align-items: end; align-content: end; }
+  .hero-copy { justify-content: flex-start; padding-block: clamp(28px, 6vw, 56px) 0; }
+  /* Auf schmalen Fenstern ist der Rahmen zu klein fuer eine Beschriftung auf
+     der Linie: die Berufsbezeichnung waere zweizeilig geworden und haette die
+     Linie verdeckt. Sie steht hier im Fluss ueber dem Namen, im Rahmen. */
+  .hero-frame { padding-top: clamp(14px, 2.6vw, 22px); }
+  .role { position: static; transform: none; margin: 0 0 clamp(6px, 1.4vw, 12px); padding-inline: 0; background: none; white-space: normal; }
+  /* Untereinander ist die Bildflaeche breiter als hoch. Deshalb bestimmt hier
+     die Breite die Groesse der Person, und sie steht mittig; sonst bliebe links
+     ein leeres Beigefeld stehen. */
+  /* Untereinander ist die Bildflaeche breiter als hoch. Deshalb bestimmt hier
+     die Breite die Groesse der Person, und sie steht mittig; sonst bliebe links
+     ein leeres Beigefeld stehen. Das Seitenverhaeltnis haelt den Kopf im Bild. */
+  .hero-figure { margin: 0 auto clamp(20px, 4vw, 30px); width: 100%; max-width: 520px; min-height: 0; aspect-ratio: 4 / 5; border-radius: var(--radius); }
+  .hero-figure img { left: 50%; bottom: -34%; transform: translateX(-52%); width: min(106%, 560px); height: auto; }
+  .lead { max-width: 46ch; }
+  /* Die Ziffernspalte behaelt hier ein festes Mass, sonst fluchten die Gebiete
+     nicht, weil die Eins schmaler ist als die Zwei und die Drei. */
+  /* Untereinander bleibt in der Textspalte keine freie Hoehe uebrig, der
+     automatische obere Abstand des Kontaktblocks faellt damit auf null. Ohne
+     eigenes Mass klebte seine Linie an den Rechtsgebieten darueber. */
+  .hero-contact { margin-top: clamp(26px, 4.4vw, 40px); }
+  .area-register { --ziffer-spalte: clamp(42px, 10.5vw, 52px); --register-luft: clamp(12px, 2.6vw, 24px); }
+  /* Der aufgeklappte Satz ruecht hier an die linke Kante. Auf dem Desktop haelt
+     der Einzug die Spalten des Registers zusammen; auf dem Telefon kostete er
+     bei 390 Pixeln Fensterbreite 71 Pixel, also ein Fuenftel der Textbreite,
+     und der einleitende Satz brach dadurch in vier Zeilen statt in drei. */
+  .area-detail { padding-left: 0; }
+  /* Der Kopf traegt hier statt der Punkte den Hamburger. Beides haengt an der
+     Klasse js: ohne Skript liesse sich das Menue nicht oeffnen, dann bleiben
+     die Punkte stehen. */
+  html.js .main-nav { display: none; }
+  html.js .nav-toggle { display: block; }
+  /* Beruehrflaeche der rechtlichen Links auf 48 Pixel. Die frueher hier
+     mitgefuehrte Regel fuer die Unterstreichung ist entfallen, die Links haben
+     seit dem 6. September 2026 keinen Hovereffekt mehr. */
+  .legal-nav a { padding-block: 12px; }
+  dialog { max-height: calc(100svh - 32px); border-radius: 18px; }
+  .dialog-content { padding: 58px 27px 34px; }
+  .dialog-label { font-size: 11px; }
+  .practice-details { margin: 28px 0; }
+}
+
+/* ---------- Kontaktangaben im Hero untereinander ----------
+   Gemessen am 6. September 2026: nebeneinander brauchen Telefon, E-Mail und
+   Adresse 463 Pixel, die Textspalte hat sie erst ab 521 Pixel Fensterbreite.
+   Darunter brach die Zeile, und die Adresse stand allein in einer zweiten,
+   was ausgefranst aussah. Jetzt steht jede Angabe in einer eigenen Zeile,
+   Beschriftung links, Wert rechts.
+
+   Die Grenze liegt bei 540 statt 521 Pixeln: das ist die Stufe, die es im
+   Blatt schon gibt, und die 19 Pixel Zuschlag halten Abstand zum gemessenen
+   Wert. Wird eine der drei Angaben laenger, muss neu gemessen werden.
+
+   display: contents loest die Huelle jeder Angabe auf, damit Beschriftung und
+   Wert unmittelbar in die zwei Spalten des Rasters fallen. Die Huelle traegt
+   keine eigene Bedeutung, das ist deshalb unbedenklich. */
+
+@media (max-width: 540px) {
+  .hero-contact { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: baseline; gap: clamp(10px, 2.4vw, 14px) clamp(14px, 3.4vw, 20px); }
+  .hero-contact-eintrag { display: contents; }
+  .hero-contact-label { margin-bottom: 0; }
+}
+
+/* ---------- Schmale Telefone ----------
+   Gemessen am 6. September 2026: die drei Rechtsgebiete brauchen nebeneinander
+   378 Pixel, die Textspalte ist bis rund 436 Pixel Fensterbreite schmaler. Der
+   Umbruch als Flex-Zeile setzte die Trennlinie vor "Strafrecht" an den Anfang
+   der zweiten Zeile, wo sie ins Leere zeigte.
+
+   Zwei feste Spalten loesen das ohne Rechnerei: die dritte Angabe faellt immer
+   in die erste Spalte und bekommt dort keine Linie. Die kleinere Schrift haelt
+   den Aufbau bis hinunter zu 320 Pixeln. */
+
+@media (max-width: 440px) {
+  .hero-areas { display: grid; grid-template-columns: auto auto; justify-content: start; gap: 8px 12px; font-size: 17px; }
+  .hero-areas span + span { padding-left: 12px; }
+  .hero-areas span:nth-child(odd) { padding-left: 0; border-left: 0; }
+}
+
+/* ---------- Kleine Telefone ---------- */
+
+@media (max-width: 420px) {
+  .site-header { gap: 16px; }
+  .main-nav { gap: 14px; }
+  /* Bei 320 Pixeln Fensterbreite bleibt zwischen der E-Mail-Adresse und dem
+     Rand nur ein Pixel. Faellt die Schrift auf eine Ersatzschrift zurueck,
+     reicht das nicht mehr; die Umbruchregel faengt das ab. */
+  .hero-contact a { overflow-wrap: anywhere; }
+  .button { width: 100%; }
+  .impressum-meta-row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .impressum-meta-row-abstand { margin-top: 10px; }
+}
+
+/* ---------- Bewegung reduzieren ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  /* Der Stern trifft ::details-content nicht, das Aufklappen lief hier trotz
+     der Einstellung weiter; nachgemessen am 6. September 2026. Eigene Regel und
+     nicht in die Liste oben: ein Browser, der dieses Pseudoelement nicht kennt,
+     wuerfe sonst die ganze Liste weg und behielte alle Uebergaenge. */
+  .area-row::details-content { transition: none !important; }
+}

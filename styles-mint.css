@@ -1,0 +1,57 @@
+/* Farbwelt Mintgruen, seit dem 6. September 2026 die der oeffentlichen Seite
+   index.html. Aufbau und Masse kommen unveraendert aus styles.css. Diese Datei
+   tauscht nur die Farbwerte in :root aus, damit beide Fassungen dieselbe
+   Gestaltung behalten und ein Umbau nicht doppelt gepflegt werden muss. Die
+   warme Fassung liegt in styles.css selbst und wird nur noch von index2.html
+   geladen.
+
+   Die Werte stammen aus https://www.dorda.at/, ausgelesen am 6. September 2026:
+   Navy #173c68 als Schriftfarbe, Mint #95b4a2 als Akzent, helles Mint #deeae3
+   als Flaeche. Zwei Abweichungen sind noetig, weil die Vorlage sie so nicht
+   braucht:
+
+   - Die Schaltflaeche steht im Navy #173c68, nicht in Gruen. Das Mint ist ein
+     stumpfer Salbeiton und wirkt neben dem kuehlen Navy und dem hellen Papier
+     truebe, als Flaeche taugt es, als Signal nicht. Navy nimmt die Farbe der
+     Ueberschrift auf, traegt weisse Schrift mit 10,5 zu 1 und hebt sich mit
+     10,5 zu 1 auch vom Papier ab.
+   - Gruen kommt damit nirgends mehr im Kleinen vor. Fokusring, Link-Hover und
+     die kleinen Ueberschriften stehen ebenfalls im Navy.
+   - Die Symbole auf der Mintkachel stehen in Navy statt in Weiss, das ergibt
+     4,9 zu 1 statt 2,3 zu 1. */
+
+:root {
+  --papier: #f6f8f7;
+  --weiss: #ffffff;
+  --karte: #eef3f0;
+  --bild: #deeae3;
+  --tinte: #173c68;
+  --tinte-leise: #4e6479;   /* auf der Mintflaeche des Abschlusses 4,9:1 */
+  --tinte-still: #7d8ea0;
+  --akzent: #95b4a2;
+  --akzent-tief: #173c68;    /* Schaltflaeche, Fokusring, Link-Hover */
+  --akzent-tiefer: #0e2a4a;  /* Schaltflaeche beim Ueberfahren, kleine Ueberschriften */
+  --linie: #dbe4de;
+  --ziffer: #c3d0ca;
+  --marker: #a6d8ca;         /* Mint der Unterstreichung unter "Ihr Anliegen." */
+  --rahmen: #8ea3b8;         /* Rahmenlinie im Hero, Navy aufgehellt */
+  --knopf-schrift: #fff;
+  --kachel-schrift: #173c68;
+  --knopf-schatten: 23 60 104;
+  --bild-schatten: 23 60 104;
+}
+
+/* Der Bodenschatten in der Bildflaeche laeuft hier ins Navy statt ins Braun,
+   dafuer sorgt --bild-schatten. Alles andere an der Flaeche, auch die zwei
+   Schattierungen, kommt unveraendert aus styles.css. */
+
+
+/* Die Angaben im Kontaktabschnitt, die Links im Kontaktdialog und seit dem
+   6. September 2026 auch die Navigationspunkte stehen schon im Navy. Ihr Hover
+   geht deshalb auf das tiefere Navy, sonst waere kein Unterschied zu sehen.
+   Dasselbe gilt fuer alle Links im Fliesstext, seit sie ohne Unterstreichung
+   stehen: --akzent-tief ist hier mit --tinte identisch, ihr Hover waere sonst
+   wirkungslos, und ohne Linie ist er das einzige Zeichen beim Ueberfahren. */
+.hero-contact a:hover, .contact-options a:hover, .main-nav a:hover,
+.steps-note a:hover, .legal-body p a:hover, .impressum-meta a:hover,
+.legal-content a:hover { color: var(--akzent-tiefer); }
