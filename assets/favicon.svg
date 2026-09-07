@@ -1,1 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#abd2c8"/><text x="32" y="46" text-anchor="middle" font-family="Arial,sans-serif" font-size="40" fill="#213d55">Z</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Elisabeth Zick">
+  <!-- Dieselbe Zeichnung wie assets/signet.svg, hier auf einer Kachel im
+       Papierton. Die Kachel ist noetig, weil das Symbol auch auf dunklen
+       Browserleisten und auf dem Startbildschirm steht. Ohne Grund verschwaende
+       das Navy dort. Die Fuge zwischen den Flaechen zeigt die Kachel. -->
+  <defs>
+    <path id="signet-oben-b" d="M 124.1 21.3 Q 135.2 0.0 159.2 0.0 L 415.2 0.0 Q 439.2 0.0 428.1 21.3 L 315.1 238.7 Q 304.0 260.0 280.0 260.0 L 24.0 260.0 Q 0.0 260.0 11.1 238.7 Z"/>
+    <mask id="signet-fuge-b" maskUnits="userSpaceOnUse" x="-40" y="-40" width="594" height="498">
+      <rect x="-40" y="-40" width="594" height="498" fill="#fff"/>
+      <use href="#signet-oben-b" fill="#000" stroke="#000" stroke-width="28" stroke-linejoin="round"/>
+    </mask>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="#f6f8f7"/>
+  <g transform="translate(51.0 89.4) scale(0.7981)">
+    <path d="M 182.6 178.9 Q 193.7 157.6 217.7 157.6 L 489.7 157.6 Q 513.7 157.6 502.6 178.9 L 389.6 396.3 Q 378.5 417.6 354.5 417.6 L 82.5 417.6 Q 58.5 417.6 69.6 396.3 Z" fill="#173c68" mask="url(#signet-fuge-b)"/>
+    <use href="#signet-oben-b" fill="#7fc9c0"/>
+  </g>
+</svg>

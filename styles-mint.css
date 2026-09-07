@@ -52,6 +52,10 @@
    Dasselbe gilt fuer alle Links im Fliesstext, seit sie ohne Unterstreichung
    stehen: --akzent-tief ist hier mit --tinte identisch, ihr Hover waere sonst
    wirkungslos, und ohne Linie ist er das einzige Zeichen beim Ueberfahren. */
-.hero-contact a:hover, .contact-options a:hover, .main-nav a:hover,
+.hero-contact a:hover, .contact-options a:hover,
 .steps-note a:hover, .legal-body p a:hover, .impressum-meta a:hover,
 .legal-content a:hover { color: var(--akzent-tiefer); }
+
+/* Die Navigation ist davon seit dem 7. September 2026 ausgenommen: ihre Punkte
+   behalten beim Ueberfahren ihre Farbe, es faehrt nur die Mintlinie darunter
+   ein, siehe .main-nav a::after in styles.css. */

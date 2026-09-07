@@ -72,11 +72,13 @@
   --knopf-schatten: 199 74 21;   /* Schattenfarbe der Schaltflaeche */
   --bild-schatten: 78 64 46;     /* Bodenschatten in der Bildflaeche */
   --sans: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --schadenersatz-spalten: minmax(0, 2fr) minmax(0, 1fr);
   --rand: clamp(20px, 3.4vw, 56px);
   --kopf: clamp(56px, 5.4vw, 78px);
   --seitenluft: clamp(10px, 1.1vw, 18px);  /* Luft ueber dem Kopf, geht in die Hero-Hoehe ein */
   --radius: clamp(18px, 1.7vw, 26px);
   --name: clamp(50px, 7.2vw, 106px);  /* Schriftgroesse des Namens, traegt auch die Masse des Rahmens */
+  --marke: clamp(30px, 2.9vw, 42px);  /* Hoehe des Signets im Kopf */
 }
 
 /* ---------- Grundlagen ---------- */
@@ -110,9 +112,19 @@ img { display: block; max-width: 100%; }
    Bildflaeche des Heros ist positioniert und reicht mit ihrem negativen
    oberen Rand unter den Kopf. Ohne eigene Ebene malte sie den Punkt zu. */
 .site-header { position: relative; z-index: 2; display: flex; align-items: center; gap: clamp(24px, 4vw, 64px); min-height: var(--kopf); padding-left: calc(.35 * var(--name)); }
-/* Der Kopf traegt keine Marke mehr: die Wortmarke wiederholte den Namen aus der
-   H1, das Monogramm an ihrer Stelle hat Alfred am 6. September 2026 ebenfalls
-   abbestellt. Es bleiben die zwei Navigationspunkte. */
+/* Die Marke im Kopf: erst eine Wortmarke, die den Namen aus der H1 wiederholte,
+   dann ein Monogramm, beides hat Alfred am 6. September 2026 abbestellt. Seit
+   dem 7. September 2026 steht dort das Signet, also eine reine Bildmarke, die
+   nichts wiederholt. Es liegt auf derselben Senkrechten wie "Elisabeth" im
+   Hero; die Navigationspunkte ruecken dadurch um seine Breite und den Abstand
+   der Leiste nach rechts. Auf schmalen Fenstern steht es allein links, der
+   Hamburger rechts. */
+.kopf-marke { flex: 0 0 auto; display: flex; align-items: center; }
+/* Die Hoehe steuert der Token, die Breite folgt dem Seitenverhaeltnis der
+   Datei. Beim Ueberfahren passiert nichts: Alfred wollte am 7. September 2026
+   ausdruecklich keinen Effekt auf der Marke. Nur der Fokusring bleibt, den
+   braucht die Tastaturbedienung. */
+.kopf-marke img { height: var(--marke); width: auto; }
 /* Die Punkte standen im leisen Nebenton und im Grundschnitt und waren neben dem
    grossen Namen kaum zu sehen. Sie stehen jetzt in der vollen Tinte und im
    mittleren Schnitt, wie die Kontaktangaben im Hero. Der Ueberfahrton geht
@@ -131,8 +143,6 @@ img { display: block; max-width: 100%; }
 /* Nur diese Unterseite: Weiss bis an die Fensterkanten, ohne die
    bestehenden Textkanten oder die Hoehe der Navigation zu verschieben. */
 .about-header::before { content: ""; position: absolute; z-index: -1; top: 0; bottom: 0; left: 50%; width: 100vw; transform: translateX(-50%); background: var(--weiss); }
-.about-header .main-nav [aria-current="page"] { position: relative; }
-.about-header .main-nav [aria-current="page"]::after { content: ""; position: absolute; width: 30px; height: 1px; left: 50%; bottom: -14px; transform: translateX(-50%); background: var(--tinte); opacity: .75; }
 /* "Über mich" steht am rechten Ende der Leiste, auf Wunsch Alfreds vom
    6. September 2026. Dort liegt im Hero die Bildflaeche des Portraets: sie
    reicht mit ihrem negativen oberen Rand unter den Kopf, ihre rechte Kante ist
@@ -146,8 +156,12 @@ img { display: block; max-width: 100%; }
    Zeile um, dann steht der Punkt rechts in der zweiten Zeile. */
 .main-nav .nav-rechts { margin-left: auto; margin-right: var(--radius); }
 .main-nav a { position: relative; padding-block: 4px; transition: color .2s ease; }
-.main-nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .25s ease; }
-.main-nav a:hover { color: var(--akzent-tief); }
+.main-nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--marker); transform: scaleX(0); transform-origin: left; transition: transform .25s ease; }
+/* Beim Ueberfahren aendert sich seit dem 7. September 2026 nur die Linie, nicht
+   die Schrift: sie faehrt im hellen Mint --marker ein, demselben Ton wie die
+   Unterstreichung unter den Ueberschriften. Als Schriftfarbe waere dieses Mint
+   mit 1,5 zu 1 unlesbar, als Linie unter dem Wort ist es Schmuck und braucht
+   den Kontrast nicht. Der Punkt selbst bleibt im --tinte stehen. */
 .main-nav a:hover::after { transform: scaleX(1); }
 
 /* Hamburger. Er steht nur auf schmalen Fenstern und nur mit JavaScript: ohne
@@ -205,10 +219,12 @@ h1 { margin: 0 0 calc(-.18 * var(--name)); font-size: var(--name); font-weight: 
    Papierton hinter ihr ist die Unterbrechung; er muss der Flaeche entsprechen,
    auf der der Hero steht. */
 /* Der seitliche Innenabstand unterbricht die Linie, verschoebe aber auch den
-   Text. Er wird deshalb vom Startpunkt wieder abgezogen: so steht das R der
-   Berufsbezeichnung genau ueber dem E von "Elisabeth". Das em bezieht sich in
+   Text. Er wird deshalb vom Startpunkt wieder abgezogen. Dazu kommt seit dem
+   7. September 2026 ein Zuschlag von 3,4 Prozent der Namensgroesse: das grosse
+   E traegt bei seiner Groesse mehr Vorbreite als das R der kleineren Zeile,
+   ohne den Zuschlag stuende das R sichtbar zu weit links. Das em bezieht sich in
    beiden Werten auf die Schriftgroesse dieser Zeile. */
-.role { position: absolute; top: 0; left: calc(.35 * var(--name) - .5em); transform: translateY(-50%); margin: 0; padding-inline: .5em; background: var(--papier); font-size: clamp(20px, 1.8vw, 29px); font-weight: 500; line-height: 1.2; letter-spacing: -.025em; white-space: nowrap; }
+.role { position: absolute; top: 0; left: calc(.35 * var(--name) - .5em + .034 * var(--name)); transform: translateY(-50%); margin: 0; padding-inline: .5em; background: var(--papier); font-size: clamp(20px, 1.8vw, 29px); font-weight: 500; line-height: 1.2; letter-spacing: -.025em; white-space: nowrap; }
 
 .lead { max-width: 34ch; margin: clamp(14px, 1.6vw, 24px) 0 0; color: var(--tinte-leise); font-size: clamp(15px, 1.2vw, 18px); line-height: 1.6; }
 /* Die drei Rechtsgebiete stehen nebeneinander, getrennt von einer feinen
@@ -426,8 +442,40 @@ h1 { margin: 0 0 calc(-.18 * var(--name)); font-size: var(--name); font-weight: 
    die Punkte oben buendig; ohne das zoege das Raster sie ueber die volle
    Bildhoehe auseinander. */
 .area-split .area-topic-points { align-content: start; padding-left: clamp(18px, 2vw, 30px); border-left: 1px solid color-mix(in srgb, var(--marker) 55%, white); }
+/* Schadenersatz: Text zuerst, Motiv rechts; mobil folgt das Bild dem Text.
+
+   Bis zum 7. September 2026 stand nur die Punkteliste neben dem Motiv, mittig
+   ausgerichtet. Weil drei kurze Punkte viel niedriger sind als ein Motiv,
+   entstand dabei bei 1440 Pixeln eine Luecke von 86 Pixeln zwischen dem
+   Einleitungssatz und dem ersten Punkt: die Liste schwebte ohne Bezug in der
+   Zeile, und unter ihr blieb eine ebenso grosse leere Flaeche.
+
+   Seither traegt die linke Haelfte den Einleitungssatz mit. Satz und Punkte
+   zusammen sind rund 200 Pixel hoch, das Motiv 230; beide Haelften stehen also
+   fast gleich hoch nebeneinander, und die Luecke gibt es nicht mehr. Die
+   Aufteilung des Zivilrechts und des Strafrechts bleibt unberuehrt, dort steht
+   der Satz weiter ueber der ganzen Breite.
+
+   Der Satz braucht dafuer die Huelle .area-split-text: mit ihr hat das Raster
+   genau zwei Kinder und ordnet sie von selbst nebeneinander an. Ohne sie
+   muessten Satz, Liste und Motiv einzeln in Spalten und Zeilen gesetzt werden,
+   und diese Zuweisungen muessten im schmalen Fenster wieder zurueckgenommen
+   werden, sonst schiebt grid-column das Motiv in eine Spalte, die es dort
+   nicht gibt. Genau daran ist der frueher beschriebene Ueberlappungsfehler
+   entstanden.
+
+   margin-top faellt weg, weil der Satz jetzt im Raster steht und die Zeile
+   deshalb unmittelbar unter der Gebietszeile beginnt. Der Selektor nennt das
+   Elternteil mit, damit er auch die spaetere Regel fuer schmale Fenster
+   schlaegt; nach reiner Reihenfolge wuerde deren margin-top gewinnen. */
+.area-split--bild-rechts { grid-template-columns: var(--schadenersatz-spalten); align-items: center; }
+.area-detail > .area-split--bild-rechts { margin-top: 0; }
+.area-split--bild-rechts .area-topic-points { padding-left: 0; border-left: 0; }
 .area-topic-points { margin: 0; padding: 0; list-style: none; display: grid; gap: clamp(12px, 1.25vw, 17px); }
 .area-detail > .area-topic-points { margin-top: clamp(18px, 2vw, 28px); }
+/* Im Schadenersatz steht der Satz in derselben Huelle wie die Punkte, der
+   Selektor darueber greift dort nicht. Der Abstand ist derselbe. */
+.area-split-text .area-topic-points { margin-top: clamp(18px, 2vw, 28px); }
 .area-topic-points li { position: relative; padding-left: 22px; font-size: clamp(16px, 1.2vw, 18px); line-height: 1.55; }
 /* Dasselbe Quadrat wie in .area-points, damit alle Rechtsgebiete gleich
    aussehen. Die Zeilenhoehe ist hier 1,55, deshalb .775em statt .75em. */
@@ -683,35 +731,77 @@ h1 { margin: 0 0 calc(-.18 * var(--name)); font-size: var(--name); font-weight: 
    Flaeche mit weisser Schrift. Sie laeuft wie die Abschlussflaeche und die
    Rechtsflaeche ueber die volle Fensterbreite, dieselbe Rechnung aus
    margin-inline und padding-inline: ein Band, das vor dem Fensterrand aufhoert,
-   saehe aus wie ein Fehler. Die Farbe trennt sie von der Flaeche darueber,
-   deshalb traegt sie weiterhin keine eigene Linie, nur Luft.
-   Name links, Pflichtangaben rechts; auf schmalen Fenstern bricht die Reihe um
-   und beides steht untereinander.
+   saehe aus wie ein Fehler.
    Der linke Einzug ist derselbe wie im Kopf, calc(.35 * var(--name)): der Name
    stand vorher an der blossen Seitenkante und damit eine Stufe weiter links
    als Navigation, Hero und Rechtsgebiete. Er steht jetzt im Einzug der Flaeche,
    deshalb die Summe aus beidem. Rechts bleibt es beim Rand der Seite, dort
    fluchten die Links mit den Pluszeichen des Registers.
-   Die Flaeche ist seit dem 6. September 2026 halb so hoch, auf Wunsch von
-   Alfred. Nicht das Polster wurde halbiert, sondern die gemessene Hoehe: die
-   Zeile selbst braucht 27 Pixel, die bleiben. Aus 123 Pixeln bei 1440 Pixeln
-   Fensterbreite wurden so 62, das Polster ging dafuer von 46/50 auf 17/18.
-   Wer hier schraubt, misst nach und rechnet die Zeilenhoehe mit. */
-.site-footer { margin-inline: calc(50% - 50vw); padding: clamp(14px, 1.2vw, 17px) calc(50vw - 50%) clamp(14px, 1.2vw, 18px) calc(50vw - 50% + .35 * var(--name)); background: var(--fusszeile); color: var(--fusszeile-schrift); font-size: clamp(13px, 1vw, 15px); }
+
+   Seit dem 7. September 2026 traegt sie mehr als die Pflichtangaben, auf Wunsch
+   von Alfred und nach dem Vorbild der Fusszeile von hydrapt.com: oben die Marke
+   mit einem Satz, daneben drei Spalten Wegweiser, unten hinter einer Haarlinie
+   die Jahreszeile. Damit ist sie wieder hoch, die Halbierung vom 6. September
+   ist damit aufgehoben. Den grossen Schriftzug am Seitenende, den die Vorlage
+   unten auslaufen laesst, hat Alfred ausdruecklich nicht gewollt.
+
+   Die obere Kante ist gerundet wie die Karten der Seite, --radius. Dahinter
+   steht die weisse Flaeche des Abschlusses, die in den Ecken durchscheint. */
+.site-footer {
+  /* Vier lokale Toene, alle aus --fusszeile abgeleitet oder weiss mit
+     Deckkraft. Sie stehen hier und nicht in :root, weil sie nur auf dieser
+     einen dunklen Flaeche gelten; --fusszeile ist in beiden Farbwelten
+     dasselbe Navy, die Ableitung zieht also automatisch mit. */
+  --fuss-leise: rgb(255 255 255 / 76%);   /* 8,4:1 auf dem Navy */
+  --fuss-still: rgb(255 255 255 / 58%);   /* nur fuer Beschriftungen */
+  --fuss-linie: rgb(255 255 255 / 16%);
+  --fuss-hell: hsl(from var(--fusszeile) h s 29%);
+
+  margin-inline: calc(50% - 50vw);
+  padding: clamp(48px, 5.6vw, 84px) calc(50vw - 50%) clamp(20px, 2vw, 28px) calc(50vw - 50% + .35 * var(--name));
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: var(--fusszeile);
+  /* Der Verlauf ist Beiwerk: faellt die relative Farbangabe aus, bleibt das
+     flache Navy der Zeile darueber stehen. */
+  background: linear-gradient(180deg, var(--fuss-hell) 0%, var(--fusszeile) 58%);
+  color: var(--fusszeile-schrift);
+  font-size: clamp(13px, 1vw, 15px);
+}
 /* Der Fokusring der Seite steht im --akzent-tief, das in der Mintfassung genau
    das Blau der Fusszeile ist und dort verschwaende. Auf dieser Flaeche ist er
    deshalb weiss. */
 .site-footer :focus-visible { outline-color: var(--fusszeile-schrift); }
-.footer-meta { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 10px clamp(24px, 3vw, 48px); }
-/* Die Jahreszeile ist eine Pflichtangabe und kein Ziel, sie steht deshalb
-   leiser als die zwei Links: gebrochenes Weiss statt vollem. */
-.footer-name { margin: 0; color: rgb(255 255 255 / 74%); }
-.legal-nav { display: flex; gap: clamp(18px, 2.2vw, 32px); }
-/* Ohne Hovereffekt, seit dem 6. September 2026 auf Wunsch von Alfred. Die
-   frueheren Regeln zogen beim Ueberfahren eine Unterstreichung auf; sie sind
-   entfernt, die Links bleiben in Ruhe. Die Tastaturbedienung ist davon nicht
-   betroffen, der Fokusring steht weiter oben in .site-footer :focus-visible. */
-.legal-nav a { padding-block: 3px; }
+
+/* Marke links, Wegweiser rechts. Die rechte Haelfte ist breiter, sie traegt
+   drei Spalten gegen einen Absatz. */
+.footer-oben { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.45fr); gap: clamp(36px, 4.6vw, 76px); padding-bottom: clamp(36px, 4.2vw, 62px); }
+
+/* Ohne Signet, auf Wunsch von Alfred vom 7. September 2026. Die Marke ist
+   zweifarbig und traegt Navy, das auf dieser Flaeche verschwindet; eine dunkle
+   Fassung mit weisser unterer Flaeche lag kurz bei und ist wieder entfernt.
+   Der Block beginnt deshalb mit dem Namen, ohne oberen Abstand: er soll auf
+   derselben Hoehe stehen wie die Titel der Spalten daneben. */
+.footer-marke-name { margin: 0; font-size: clamp(18px, 1.5vw, 22px); font-weight: 700; letter-spacing: -.02em; }
+.footer-marke-satz { margin: 10px 0 0; max-width: 38ch; color: var(--fuss-leise); line-height: 1.6; }
+
+.footer-nav { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(24px, 2.8vw, 40px); }
+.footer-spalte { display: flex; flex-direction: column; align-items: flex-start; gap: clamp(9px, .9vw, 12px); }
+/* Die Spaltentitel tragen den Beschriftungssatz der Seite, wie .label:
+   Versalien, Schnitt 500, weite Laufweite. */
+.footer-spalte h2 { margin: 0 0 2px; font-size: clamp(11px, .85vw, 13px); font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--fuss-still); }
+/* Die Links stehen etwas leiser als die Marke und werden beim Ueberfahren voll
+   weiss. Eine Unterstreichung bekommen sie nicht, die hat Alfred am
+   6. September 2026 fuer die ganze Seite abbestellt. */
+.footer-spalte a { padding-block: 3px; color: var(--fuss-leise); font-weight: 500; transition: color .2s ease; }
+.footer-spalte a:hover { color: var(--fusszeile-schrift); }
+
+/* Abschlusszeile hinter einer Haarlinie: Jahreszeile links, Kammerangabe
+   rechts. Auf schmalen Fenstern bricht die Reihe um. */
+.footer-meta { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 10px clamp(24px, 3vw, 48px); padding-top: clamp(18px, 1.9vw, 26px); border-top: 1px solid var(--fuss-linie); font-size: clamp(12px, .9vw, 14px); }
+/* Jahreszeile und Kammer sind Pflichtangaben und kein Ziel, sie stehen deshalb
+   leiser als die Links darueber. */
+.footer-name { margin: 0; color: var(--fuss-still); }
+.footer-kammer { margin: 0; color: var(--fuss-still); }
 
 /* ---------- Rechtsseiten ----------
    Eigene Seite fuer das Impressum, Aufbau nach dem Muster von
@@ -767,16 +857,9 @@ h1 { margin: 0 0 calc(-.18 * var(--name)); font-size: var(--name); font-weight: 
    Fussnote der Seite. Sie bekommt deshalb Luft und eine leisere Bezeichnung. */
 .impressum-meta-row-abstand { padding-top: clamp(18px, 2vw, 26px); }
 .impressum-meta-row-leise dt { color: var(--tinte-leise); }
-.impressum-meta-row-webdesign { align-items: center; }
 .impressum-meta dt { margin: 0; font-weight: 500; line-height: 1.45; }
 .impressum-meta dd { margin: 0; color: var(--tinte-leise); line-height: 1.7; overflow-wrap: anywhere; }
 .impressum-meta-ref { display: block; margin-top: 3px; color: var(--tinte-still); font-size: .82em; font-weight: 400; letter-spacing: 0; }
-/* Die Zeile Webdesign traegt das Logo ueber dem Namen. Auf der weissen Flaeche
-   gilt die Fassung on-light des Markenpakets, die weisse oder die helle
-   Fassung waere dort nicht zu sehen. 150 Pixel liegen ueber den 120 Pixeln,
-   unter denen laut Markenpaket die Zeile COMPILE nicht mehr traegt. */
-.impressum-webdesign { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 9px; }
-.impressum-webdesign img { width: 150px; height: auto; }
 .impressum-meta a { color: var(--tinte); font-weight: 500; transition: color .2s ease; }
 .impressum-meta a:hover { color: var(--akzent-tief); }
 
@@ -863,7 +946,10 @@ h1 { margin: 0 0 calc(-.18 * var(--name)); font-size: var(--name); font-weight: 
   .about-banner-portraet img { height: 96%; }
   .about-banner::before { display: none; }
   .about-intro { grid-template-columns: 1fr; gap: 22px; width: min(620px, 100%); margin-top: 26px; }
-  .about-intro-lead { max-width: 24ch; }
+  /* Die Leitzeile steht am Telefon mittig, wie die Ueberschriften der uebrigen
+     Seiten. Der Absatz darunter bleibt linksbuendig, mittig gesetzter
+     Fliesstext ist auf schmalen Zeilen schwer zu lesen. */
+  .about-intro-lead { max-width: 24ch; margin-inline: auto; text-align: center; }
   .about-intro-text { padding-top: 0; }
 }
 
@@ -1025,10 +1111,30 @@ html:not(.js) dialog:target .dialog-content { padding-top: 44px; }
      die Punkte stehen. */
   html.js .main-nav { display: none; }
   html.js .nav-toggle { display: block; }
-  /* Beruehrflaeche der rechtlichen Links auf 48 Pixel. Die frueher hier
-     mitgefuehrte Regel fuer die Unterstreichung ist entfallen, die Links haben
-     seit dem 6. September 2026 keinen Hovereffekt mehr. */
-  .legal-nav a { padding-block: 12px; }
+  /* ---------- Mittig am Telefon ----------
+     Seit dem 7. September 2026 auf Wunsch von Alfred. Zentriert wird, was als
+     Block ueber dem Inhalt steht: Beschriftung, Ueberschrift, Einleitung und
+     die ganze Fusszeile. Fliesstext, Ablaufkarten und das Register bleiben
+     linksbuendig, mittig gesetzte Absaetze sind auf schmalen Zeilen schwer zu
+     lesen.
+
+     Voraussetzung dafuer ist eine symmetrische Flaeche: der linke Einzug
+     calc(.35 * var(--name)) richtet die Abschnitte am Namen im Hero aus und
+     verschiebt am Telefon jeden mittig gesetzten Block um rund 17 Pixel nach
+     rechts. Er faellt hier deshalb weg. Der Hero behaelt seinen Einzug, dort
+     haengt der Rahmen um den Namen daran. */
+  .areas, .closing, .site-footer { padding-left: calc(50vw - 50%); }
+  .areas > .label, .areas > h2 { text-align: center; }
+
+  /* Untereinander statt nebeneinander: fuer Marke und drei Spalten nebeneinander
+     ist hier kein Platz. Die Spalten bleiben zu dritt, sie tragen nur kurze
+     Zeilen. Die Beruehrflaeche der Links waechst auf 44 Pixel. */
+  .footer-oben { grid-template-columns: minmax(0, 1fr); gap: clamp(32px, 6vw, 48px); justify-items: center; text-align: center; }
+  .footer-marke-satz { margin-inline: auto; }
+  .footer-nav { width: 100%; }
+  .footer-spalte { gap: 4px; align-items: center; }
+  .footer-spalte a { padding-block: 12px; }
+  .footer-meta { justify-content: center; text-align: center; }
   dialog { max-height: calc(100svh - 32px); border-radius: 18px; }
   .dialog-content { padding: 58px 27px 34px; }
   .dialog-label { font-size: 11px; }
@@ -1054,6 +1160,9 @@ html:not(.js) dialog:target .dialog-content { padding-top: 44px; }
   .hero-contact { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: baseline; gap: clamp(10px, 2.4vw, 14px) clamp(14px, 3.4vw, 20px); }
   .hero-contact-eintrag { display: contents; }
   .hero-contact-label { margin-bottom: 0; }
+  /* Drei Spalten nebeneinander lassen der E-Mail-Adresse hier rund 150 Pixel,
+     sie braucht mehr. Die Wegweiser stehen deshalb untereinander. */
+  .footer-nav { grid-template-columns: minmax(0, 1fr); gap: clamp(26px, 6vw, 34px); }
 }
 
 /* ---------- Schmale Telefone ----------
@@ -1096,4 +1205,131 @@ html:not(.js) dialog:target .dialog-content { padding-top: 44px; }
      nicht in die Liste oben: ein Browser, der dieses Pseudoelement nicht kennt,
      wuerfe sonst die ganze Liste weg und behielte alle Uebergaenge. */
   .area-row::details-content { transition: none !important; }
+}
+
+/* ---------- Blog ----------
+   Angelegt am 7. September 2026. Die Seiten unter blog/ erzeugt
+   tools/build-blog.py aus den Markdown-Dateien in content/blog; geschrieben
+   werden diese in Pages CMS. Der Text kommt damit aus fremder Hand, das
+   Aussehen bleibt hier.
+
+   Deshalb ist jedes Element, das der Editor erzeugen kann, unten gesetzt:
+   Zwischenueberschrift, Aufzaehlung, nummerierte Liste, Zitat, Link, Bild.
+   Was hier keine Regel hat, kann im Beitrag auch nicht auftauchen, ohne
+   aufzufallen. Masse und Farben sind die der uebrigen Unterseiten, die
+   Blogseiten bringen keine eigenen mit.
+
+   Die hoehere Spezifitaet mit vorangestelltem .legal-body ist an mehreren
+   Stellen noetig: .legal-body h2 traegt sehr grosse Abstaende, die im
+   Beitragsfliesstext und in der Beitragsliste fehl am Platz waeren. */
+
+/* Uebersicht: je Beitrag eine Karte quer ueber die Breite, untereinander.
+   Aufgeteilt wie die Zeilen auf der Impressumseite: links das Rechtsgebiet mit
+   dem Datum, rechts Titel und Vorspann. Die Uebersicht fuehrt damit kein neues
+   Muster ein, sie nutzt das vorhandene.
+
+   Die Karten tragen keine eigene Flaeche, sie stehen auf dem Weiss des
+   Abschnitts und werden nur von einer feinen Linie gefasst. Das haelt die
+   Seite ruhig und stellt Titel und Text in den Vordergrund.
+
+   Anklickbar ist die ganze Karte, den Verweis traegt aber allein die
+   Ueberschrift: ihr ::after legt sich als unsichtbare Flaeche darueber. Damit
+   gibt es je Karte genau einen Verweis mit sprechendem Text, und der Fokusring
+   umschliesst trotzdem die ganze Karte. */
+.blog-liste { display: flex; flex-direction: column; gap: clamp(14px, 1.5vw, 20px); width: min(900px, 100%); margin-inline: auto; text-align: left; }
+.blog-karte { position: relative; display: grid; grid-template-columns: minmax(128px, 19%) minmax(0, 1fr); gap: clamp(14px, 1.8vw, 30px); padding: clamp(20px, 2.2vw, 30px) clamp(22px, 2.6vw, 36px); border: 1px solid var(--linie); border-radius: clamp(8px, .7vw, 11px); }
+/* Die Übersichtskarten bleiben beim Überfahren unverändert. Der Verweis und
+   sein Fokus bleiben erhalten, nur die dekorativen Zustandswechsel entfallen. */
+/* .legal-body p zentriert seine Absaetze mit margin: 0 auto und begrenzt sie
+   auf 62 Zeichen. In der Karte bestimmt die Spalte die Breite. */
+.legal-body .blog-karte p { max-width: none; margin-inline: 0; }
+
+/* Linke Spalte: Rechtsgebiet ueber Datum, beide klein und versal. Auf der
+   Grundlinie des Titels, nicht auf der Oberkante der Karte. */
+.blog-karte-meta { display: flex; flex-direction: column; gap: 5px; padding-top: .34em; font-size: clamp(11px, .85vw, 13px); font-weight: 500; letter-spacing: .16em; text-transform: uppercase; line-height: 1.4; }
+.blog-karte-gebiet { color: var(--akzent-tiefer); }
+.blog-karte-datum { color: var(--tinte-still); }
+
+/* Rechte Spalte */
+.legal-body .blog-karte-titel { margin: 0; font-size: clamp(19px, 1.7vw, 25px); font-weight: 700; line-height: 1.25; letter-spacing: -.02em; }
+.blog-karte-titel a { color: var(--tinte); }
+.blog-karte-titel a::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.legal-body .blog-karte .blog-karte-text { max-width: none; margin: clamp(9px, 1vw, 13px) 0 0; font-size: clamp(15px, 1.1vw, 17px); }
+.blog-karte-mehr { margin: clamp(12px, 1.3vw, 17px) 0 0; color: var(--akzent-tief); font-size: clamp(14px, 1.05vw, 16px); font-weight: 500; }
+.blog-leer { color: var(--tinte-leise); }
+
+/* Der Fokusring gehoert um die ganze Karte, nicht nur um die Ueberschrift.
+   Ohne :has() bleibt es beim gewoehnlichen Ring um den Verweis, dann ist der
+   Fokus immer noch sichtbar. */
+@supports selector(:has(a)) {
+  .blog-karte:has(.blog-karte-titel a:focus-visible) { outline: 2px solid var(--akzent-tief); outline-offset: 3px; }
+  .blog-karte .blog-karte-titel a:focus-visible { outline: none; }
+}
+
+/* Unter 640 Pixeln reicht die Breite fuer zwei Spalten nicht mehr: Gebiet und
+   Datum ruecken als eine Zeile ueber den Titel. */
+@media (max-width: 640px) {
+  .blog-karte { grid-template-columns: minmax(0, 1fr); gap: clamp(10px, 2vw, 14px); }
+  .blog-karte-meta { flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; padding-top: 0; }
+}
+
+/* Kopf eines Beitrags.
+
+   Anders als auf Honorar-, Impressums- und Datenschutzseite steht er nicht
+   mittig, sondern linksbuendig auf denselben 860 Pixeln wie der Fliesstext,
+   die Fussnoten und der Hinweis darunter. Grund: Dort traegt die Seite eine
+   kurze Ueberschrift ueber einem Textblock, hier gehoert der Kopf zum Aufsatz
+   selbst. Ein mehrzeiliger, mittig gesetzter Titel ueber linksbuendigem Text
+   sieht aus, als waere die Ausrichtung verrutscht.
+
+   Die Uebersichtsseite behaelt ihren mittigen Kopf: dort steht "Aktuelles."
+   ueber Karten, nicht ueber Fliesstext. */
+.blog-intro { text-align: left; }
+.blog-intro-inhalt { max-width: 860px; margin-inline: auto; }
+.legal-intro .blog-titel { max-width: none; margin-inline: 0; font-size: clamp(30px, 3.4vw, 46px); line-height: 1.2; }
+.blog-intro .lead { max-width: 58ch; margin-inline: 0; }
+.blog-meta { display: flex; flex-wrap: wrap; gap: 8px clamp(8px, 1vw, 12px); margin: clamp(18px, 2vw, 26px) 0 0; color: var(--tinte-still); font-size: clamp(13px, 1vw, 15px); }
+
+/* Fliesstext eines Beitrags. Alles, was der Editor setzen kann. */
+.blog-text { hyphens: auto; }
+.legal-body .blog-text p { max-width: 68ch; font-size: clamp(16px, 1.15vw, 18px); }
+.legal-body .blog-text h2 { margin: clamp(30px, 3.4vw, 48px) 0 clamp(8px, 1vw, 14px); font-size: clamp(19px, 1.65vw, 24px); }
+.legal-body .blog-text h3 { margin: clamp(22px, 2.4vw, 32px) 0 clamp(6px, .8vw, 10px); font-size: clamp(16px, 1.25vw, 19px); font-weight: 700; letter-spacing: -.015em; }
+.blog-text ul, .blog-text ol { max-width: 66ch; margin: clamp(12px, 1.4vw, 18px) 0 0; padding-left: 1.4em; color: var(--tinte-leise); font-size: clamp(16px, 1.15vw, 18px); line-height: 1.7; }
+.blog-text li + li { margin-top: 6px; }
+.blog-text li::marker { color: var(--tinte-still); }
+.blog-text blockquote { max-width: 62ch; margin: clamp(20px, 2.2vw, 30px) 0; padding-left: clamp(16px, 1.6vw, 22px); border-left: 3px solid var(--marker); color: var(--tinte); font-size: clamp(17px, 1.25vw, 20px); line-height: 1.6; }
+.blog-text blockquote p { color: inherit; font-size: inherit; }
+.blog-text a { color: var(--tinte); font-weight: 500; text-decoration: underline; text-decoration-color: var(--linie); text-underline-offset: .18em; transition: color .2s ease, text-decoration-color .2s ease; }
+.blog-text a:hover { color: var(--akzent-tief); text-decoration-color: currentColor; }
+.blog-text img { display: block; max-width: 100%; height: auto; margin: clamp(24px, 2.8vw, 38px) 0; border-radius: var(--radius); }
+.blog-text hr { width: 48px; height: 3px; margin: clamp(24px, 2.6vw, 34px) 0; border: 0; border-radius: 2px; background: var(--marker); }
+
+/* Fussnoten. Die Ziffer im Text ist ein Sprungziel, die Rueckverweise im
+   Apparat fuehren an die Stelle zurueck, an der sie stand. */
+.blog-text sup { line-height: 0; }
+.blog-text .footnote-ref { padding-left: 1px; color: var(--akzent-tief); font-weight: 500; font-size: .78em; text-decoration: none; }
+.blog-text .footnote-ref:hover { color: var(--akzent-tiefer); text-decoration: underline; }
+.blog-fussnoten { max-width: 860px; margin: clamp(34px, 4vw, 56px) auto 0; padding-top: clamp(18px, 2vw, 26px); border-top: 1px solid var(--linie); text-align: left; }
+.blog-fussnoten ol { margin: 0; padding-left: 1.6em; }
+.blog-fussnoten li { color: var(--tinte-leise); font-size: clamp(12px, .95vw, 14px); line-height: 1.65; scroll-margin-top: 28px; }
+.blog-fussnoten li + li { margin-top: clamp(8px, .9vw, 12px); }
+.blog-fussnoten li::marker { color: var(--tinte-still); }
+.legal-body .blog-fussnoten p { max-width: 78ch; margin: 0; color: inherit; font-size: inherit; line-height: inherit; }
+.blog-fussnoten a { color: var(--tinte); font-weight: 500; overflow-wrap: anywhere; }
+.blog-fussnoten a:hover { color: var(--akzent-tief); }
+/* Die angesprungene Fussnote hebt sich kurz ab, sonst sucht man in einer
+   langen Liste die Zeile, auf der man gelandet ist. */
+.blog-fussnoten li:target { background: var(--karte); box-shadow: 0 0 0 6px var(--karte); border-radius: 3px; }
+.footnote-backref { text-decoration: none; }
+
+/* Abschluss eines Beitrags */
+/* .legal-body p nennt ein Element mehr und gewinnt sonst mit seinem
+   margin: 0 auto; der Verweis klebte damit an der letzten Fussnote. */
+.legal-body .blog-zurueck { margin: clamp(30px, 3.4vw, 48px) 0 0; font-size: clamp(14px, 1.05vw, 16px); }
+.blog-zurueck a { color: var(--akzent-tief); font-weight: 500; }
+.blog-zurueck a:hover { color: var(--akzent-tiefer); text-decoration: underline; text-underline-offset: .2em; }
+
+@media (max-width: 640px) {
+  .blog-fussnoten li:target { box-shadow: 0 0 0 4px var(--karte); }
 }

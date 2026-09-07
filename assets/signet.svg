@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 514 418" role="img" aria-label="Signet Elisabeth Zick">
+  <!-- Bildmarke der Seite: zwei versetzte, gerundete Flaechen, oben Tuerkis,
+       unten Navy. Die Proportionen sind an dem von Alfred am 7. September 2026
+       gewaehlten Entwurf gemessen, siehe
+       design/concepts/2026-09-07-logo-z-sechs/03-weiche-geometrie.png.
+       Wichtig: die untere Flaeche ist etwas breiter als die obere. Sie liegt
+       zur Haelfte unter der oberen, und ohne diesen Ausgleich wirkt der
+       sichtbare Rest abgeschnitten. Erzeugt aus den Eckpunkten, nicht von Hand
+       gezeichnet, siehe Abschnitt "Die Marke" in docs/context/design.md.
+       Achtung: Kommentare in einem SVG duerfen keine zwei Bindestriche
+       hintereinander enthalten, sonst laedt die Datei nicht. -->
+  <defs>
+    <path id="signet-oben-a" d="M 124.1 21.3 Q 135.2 0.0 159.2 0.0 L 415.2 0.0 Q 439.2 0.0 428.1 21.3 L 315.1 238.7 Q 304.0 260.0 280.0 260.0 L 24.0 260.0 Q 0.0 260.0 11.1 238.7 Z"/>
+    <mask id="signet-fuge-a" maskUnits="userSpaceOnUse" x="-40" y="-40" width="594" height="498">
+      <rect x="-40" y="-40" width="594" height="498" fill="#fff"/>
+      <use href="#signet-oben-a" fill="#000" stroke="#000" stroke-width="28" stroke-linejoin="round"/>
+    </mask>
+  </defs>
+  <path d="M 182.6 178.9 Q 193.7 157.6 217.7 157.6 L 489.7 157.6 Q 513.7 157.6 502.6 178.9 L 389.6 396.3 Q 378.5 417.6 354.5 417.6 L 82.5 417.6 Q 58.5 417.6 69.6 396.3 Z" fill="#173c68" mask="url(#signet-fuge-a)"/>
+  <use href="#signet-oben-a" fill="#7fc9c0"/>
+</svg>
