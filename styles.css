@@ -681,19 +681,6 @@ h1 { margin: 0 0 calc(-.18 * var(--name)); font-size: var(--name); font-weight: 
 .step-kontakt a:hover { color: var(--akzent-tief); }
 .step-kontakt svg { flex: none; width: 1.05em; height: 1.05em; margin-top: .18em; }
 
-/* Die Fussnote der ersten Karte. margin-top: auto zieht sie an den Fuss der
-   Karte, damit sie den Schritt selbst nicht zerreisst; anders als bei der
-   Ueberschrift stoert das hier nicht, weil unten nichts fluchten muss.
-   Sie ist der einzige Text der Karten im leisen Ton. Gemessen am
-   10. September 2026: --tinte-leise auf --stufe-tuerkis kommt auf 4,9 zu 1,
-   das traegt auch diese Groesse. Die feine Linie darueber ist aus --tinte
-   gemischt, --linie waere auf der getoenten Flaeche nicht zu sehen. */
-.step .step-fussnote { max-width: none; margin-top: auto; padding-top: clamp(14px, 1.4vw, 20px); border-top: 1px solid color-mix(in srgb, var(--tinte) 22%, transparent); color: var(--tinte-leise); font-size: clamp(13px, 1vw, 15px); line-height: 1.5; }
-/* Das Fussnotenzeichen bleibt klein und hebt die Zeile nicht auf: mit der
-   Voreinstellung "smaller" und dem geerbten Zeilenabstand waechst sonst die
-   Zeile, in der es steht. */
-.step sup { font-size: .72em; line-height: 0; }
-
 /* Die Pfeile zwischen den Karten sind zwei Pseudoelemente statt eigener
    Zeichen: ::before ist der Schaft, ::after die Spitze aus zwei gedrehten
    Rahmenlinien. Ein Textpfeil waere von der Schriftdatei abhaengig, die nur
@@ -789,10 +776,10 @@ h1 { margin: 0 0 calc(-.18 * var(--name)); font-size: var(--name); font-weight: 
   .step h3 { margin-top: clamp(16px, 3vw, 24px); }
   .step p { max-width: none; }
   .step ul { max-width: none; }
-  /* Untereinander ist die Karte genau so hoch wie ihr Inhalt, die beiden
-     automatischen Abstaende haben dann keinen Weg mehr, und Angaben wie
-     Fussnote saessen auf dem Satz darueber. Feste Abstaende ersetzen sie. */
-  .step .step-kontakt, .step .step-fussnote { margin-top: clamp(16px, 3vw, 24px); }
+  /* Untereinander ist die Karte genau so hoch wie ihr Inhalt, der
+     automatische Abstand hat dann keinen Weg mehr, und die Kontaktangabe
+     saesse auf dem Satz darueber. Ein fester Abstand ersetzt ihn. */
+  .step .step-kontakt { margin-top: clamp(16px, 3vw, 24px); }
   .step:not(:last-child)::before { top: calc(100% + var(--stufe-luft) / 2); left: 50%; width: 1.5px; height: var(--pfeil); }
   /* Dieselbe Rechnung wie waagrecht, nur um eine Achse gedreht: die 120,7
      Prozent wandern von der x- auf die y-Achse, damit die Spitze am
