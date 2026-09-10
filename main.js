@@ -32,6 +32,13 @@
 
 const REGISTER_ABSTAND = 24;  /* Luft ueber dem Titel und unter dem Inhalt */
 
+/* Zeitmarke des Seitenlaufs, den die Seite selbst ausloest. Der Ausgleich
+   unten scrollt beim Aufklappen von sich aus, unter Zivilrecht um mehrere
+   hundert Pixel nach oben. Der Kopf am Ende der Datei haelt das sonst fuer ein
+   Zurueckscrollen des Nutzers und faehrt ein. Der Zuschlag deckt das Bild ab,
+   in dem der Lauf ankommt. */
+let eigenerLauf = 0;
+
 document.querySelectorAll(".area-register").forEach((register) => {
   let aktivierung = 0;
 
@@ -86,7 +93,10 @@ document.querySelectorAll(".area-register").forEach((register) => {
         const versatz = zeile.top - soll;
         /* "instant" ist noetig: "auto" folgt dem weichen scroll-behavior der
            Seite, der Ausgleich kaeme dann Bild fuer Bild zu spaet. */
-        if (Math.abs(versatz) >= .5) window.scrollBy({ top: versatz, behavior: "instant" });
+        if (Math.abs(versatz) >= .5) {
+          window.scrollBy({ top: versatz, behavior: "instant" });
+          eigenerLauf = performance.now() + 100;
+        }
 
         /* Die Zeitschranke fasst den Fall ab, dass die Hoehe nie ankommt. */
         if (!fertig && performance.now() - beginn < 1500) requestAnimationFrame(halten);
@@ -239,4 +249,95 @@ if ("IntersectionObserver" in window) {
   auftritte.forEach((element) => auftrittBeobachter.observe(element));
 } else {
   auftritte.forEach((element) => element.classList.add("ist-da"));
+}
+
+/* Kopf beim Zurueckscrollen, angelegt am 10. September 2026. Der Kopf laeuft
+   mit der Seite aus dem Bild und kommt zurueck, sobald jemand nach oben
+   scrollt. Die Bewegung selbst steht in styles.css, Abschnitt "Kopf beim
+   Zurueckscrollen"; hier fallen nur die beiden Entscheidungen.
+
+   kopf-fest heftet ihn an die Fensteroberkante, sobald sein eigener Platz im
+   Seitenlauf oben aus dem Bild ist. Darunter faellt die Klasse weg: dort steht
+   der Kopf an seinem Platz und soll wie bisher ohne Flaeche und ohne Linie
+   auf dem Papier liegen.
+
+   kopf-sichtbar blendet ihn ein, aber erst unterhalb des Heros. Im Hero bleibt
+   er weg, so wollte es Alfred am 10. September 2026: dort steht der Kopf
+   ohnehin am Seitenanfang, eine zweite Leiste ueber dem Portrait waere
+   doppelt. Seiten ohne Hero haben nur eine Schwelle, die Unterkante des
+   Kopfes; dort kommt er gleich nach dem Verschwinden zurueck.
+
+   Gemessen wird ohne die Klassen: angeheftet stuende die gemessene Unterkante
+   am Fensterrand statt an ihrem Platz im Seitenlauf. Das Wegnehmen und das
+   neue Setzen liegen im selben Arbeitsschritt, dazwischen zeichnet der Browser
+   nicht. */
+
+const kopf = document.querySelector(".site-header");
+const heroSchirm = document.querySelector(".hero-screen");
+
+if (kopf) {
+  const TOLERANZ = 2;  /* Zittern von Trackpad und Zeiger ist keine Richtung */
+
+  let kopfSchwelle = 0;
+  let heroSchwelle = 0;
+  let letzteHoehe = Math.max(window.scrollY, 0);
+  let sichtbar = false;
+  let wartet = false;
+
+  const messen = () => {
+    kopf.classList.remove("kopf-fest", "kopf-weich", "kopf-sichtbar");
+    const lauf = window.scrollY;
+    kopfSchwelle = kopf.getBoundingClientRect().bottom + lauf;
+    heroSchwelle = heroSchirm ? heroSchirm.getBoundingClientRect().bottom + lauf : kopfSchwelle;
+  };
+
+  const pruefen = () => {
+    /* Negative Werte kommen vom Ueberziehen am oberen Rand, etwa auf iOS. */
+    const hoehe = Math.max(window.scrollY, 0);
+
+    if (performance.now() >= eigenerLauf) {
+      if (hoehe < letzteHoehe - TOLERANZ) sichtbar = true;
+      else if (hoehe > letzteHoehe + TOLERANZ) sichtbar = false;
+    }
+
+    if (Math.abs(hoehe - letzteHoehe) > TOLERANZ) letzteHoehe = hoehe;
+
+    const fest = hoehe > kopfSchwelle;
+
+    /* Das erste Bild am Kopf bleibt ohne Uebergang, sonst blendete er beim
+       Anheften sichtbar aus statt einfach weg zu sein; siehe styles.css. */
+    if (!fest) {
+      kopf.classList.remove("kopf-fest", "kopf-weich");
+    } else if (!kopf.classList.contains("kopf-fest")) {
+      kopf.classList.add("kopf-fest");
+      requestAnimationFrame(() => {
+        if (kopf.classList.contains("kopf-fest")) kopf.classList.add("kopf-weich");
+      });
+    }
+
+    kopf.classList.toggle("kopf-sichtbar", fest && sichtbar && hoehe > heroSchwelle);
+  };
+
+  messen();
+  pruefen();
+
+  window.addEventListener("scroll", () => {
+    if (wartet) return;
+    wartet = true;
+    requestAnimationFrame(() => {
+      wartet = false;
+      pruefen();
+    });
+  }, { passive: true });
+
+  /* Neu messen, wenn sich die Hoehe des Heros aendern kann: beim Drehen und
+     Groessenaendern des Fensters und einmal, wenn Bilder und Schriften da
+     sind. */
+  const neuMessen = () => {
+    messen();
+    pruefen();
+  };
+
+  window.addEventListener("resize", neuMessen);
+  window.addEventListener("load", neuMessen);
 }

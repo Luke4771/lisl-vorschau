@@ -188,6 +188,40 @@ img { display: block; max-width: 100%; }
 .nav-toggle-strich::before { top: -7px; }
 .nav-toggle-strich::after { top: 7px; }
 
+/* Kopf beim Zurueckscrollen, angelegt am 10. September 2026. Der Kopf laeuft
+   mit der Seite aus dem Bild und kommt zurueck, sobald jemand nach oben
+   scrollt; niemand soll bis an den Seitenanfang, nur um die Navigation zu
+   erreichen. Wann welche Klasse faellt, entscheidet main.js.
+
+   .kopf-fest heftet ihn an die Fensteroberkante. position: sticky und nicht
+   fixed: sticky laesst ihm seinen Platz im Seitenlauf, fixed nimmt ihn heraus,
+   und die ganze Seite ruckte im selben Moment um die Kopfhoehe nach oben.
+   Solange nur diese Klasse steht, wartet er unsichtbar ueber der Fensterkante
+   und faengt keine Klicks ab.
+
+   .kopf-sichtbar blendet ihn ein. Weg, Dauer und Kurve sind die der ganzen
+   Seite, siehe --auftritt-*: zwoelf Pixel und Einblenden, hier von oben statt
+   von unten. Die Regeln stehen bewusst ausserhalb von prefers-reduced-motion,
+   anders als der Auftritt der Bloecke: wer weniger Bewegung eingestellt hat,
+   soll den Kopf trotzdem bekommen, nur ohne Uebergang. Den schaltet die
+   Sammelregel im Abschnitt "Bewegung reduzieren" ab. */
+html.js .site-header.kopf-fest { position: sticky; top: 0; opacity: 0; transform: translateY(calc(-1 * var(--auftritt-weg))); pointer-events: none; }
+/* Der Uebergang kommt ein Bild spaeter dazu, main.js setzt kopf-weich. Stuende
+   er schon in der Regel darueber, liefe er im selben Moment los, in dem der
+   Kopf angeheftet wird, und zwar von sichtbar nach unsichtbar: die Leiste
+   blitzte an der Fensteroberkante auf und blendete erst danach aus. Genau das
+   Flimmern beim Verlassen des Heros, gemeldet am 10. September 2026. */
+html.js .site-header.kopf-fest.kopf-weich { transition: opacity var(--auftritt-dauer) var(--auftritt-kurve), transform var(--auftritt-dauer) var(--auftritt-kurve); }
+/* :focus-within holt ihn auch dann herein, wenn jemand mit der Tastatur
+   hineinlaeuft. Ein unsichtbarer, aber anspringbarer Punkt waere eine Falle. */
+html.js .site-header.kopf-fest.kopf-sichtbar, html.js .site-header.kopf-fest:focus-within { opacity: 1; transform: none; pointer-events: auto; }
+/* Angeheftet schwebt der Kopf ueber dem Text und braucht eine eigene Flaeche.
+   Sie liegt in einem Pseudoelement und reicht bis an die Fensterkanten,
+   waehrend der Kopf selbst innerhalb der Textkanten bleibt, wie das weisse
+   Band auf "Ueber mich". ::after und nicht ::before, weil ::before dort schon
+   dieses Band traegt. */
+html.js .site-header.kopf-fest::after { content: ""; position: absolute; z-index: -1; top: 0; bottom: 0; left: 50%; width: 100vw; transform: translateX(-50%); border-bottom: 1px solid var(--linie); background: var(--weiss); }
+
 /* ---------- Hero ----------
    Die Bildflaeche zieht sich um die Kopfhoehe nach oben, damit sie wie im
    Referenzbild buendig mit der Seitenoberkante beginnt und die Navigation
@@ -613,7 +647,52 @@ h1 { margin: 0 0 calc(-.18 * var(--name)); font-size: var(--name); font-weight: 
 .step h3 { margin: clamp(24px, 3vw, 46px) 0 clamp(9px, .9vw, 14px); color: var(--tinte); font-size: clamp(19px, 1.7vw, 26px); font-weight: 700; line-height: 1.25; letter-spacing: -.018em; }
 /* Der Satz steht im vollen --tinte, nicht im leisen Ton: auf der getoenten
    Flaeche kommt --tinte-leise nur noch knapp auf 4,5 zu 1. */
-.step p { max-width: 26ch; margin: 0; color: var(--tinte); font-size: clamp(15px, 1.2vw, 18px); line-height: 1.55; }
+.step p { max-width: 34ch; margin: 0; color: var(--tinte); font-size: clamp(15px, 1.2vw, 18px); line-height: 1.55; }
+/* Die zweite Karte fuehrt die Leistungen der Erstberatung als Aufzaehlung.
+   Das Quadrat ist dasselbe wie im Register der Rechtsgebiete, nur in --tinte
+   statt im Tuerkis von dort: auf der getoenten Kartenflaeche verschwaende das
+   helle Tuerkis, und die Karte hat ohnehin nur einen Textton.
+   Die Huelle ist um den Einzug breiter als der Absatz, damit die Schrift der
+   Punkte dieselbe Spalte fuellt wie der Satz darueber und nicht schmaler
+   laeuft. Der Punkt haengt links davor, in der Flucht des Absatzes. */
+.step ul { max-width: calc(34ch + 20px); margin: clamp(12px, 1.2vw, 16px) 0 0; padding: 0; list-style: none; display: grid; gap: clamp(7px, .7vw, 10px); }
+.step ul li { position: relative; padding-left: 20px; color: var(--tinte); font-size: clamp(15px, 1.2vw, 18px); line-height: 1.55; }
+.step ul li::before { content: ""; position: absolute; top: calc(.775em - 2px); left: 0; width: 6px; height: 6px; background: var(--tinte); }
+.step ul + p { margin-top: clamp(12px, 1.2vw, 16px); }
+/* Telefon und E-Mail stehen seit dem 10. September 2026 in der ersten Karte,
+   davor als eigene Zeile ueber der Standortkarte. Sie sind der Schritt selbst
+   und nicht sein Nachsatz, deshalb stehen sie direkt unter dem Text und ueber
+   der Fussnote.
+   Die Zeichen sind so gross wie die Versalhoehe der Zeile und stehen mit
+   flex: none in einer Flucht, damit die zweizeilige Adresse am Telefon den
+   Text nicht unter das Zeichen zieht.
+   margin-top: auto steht hier und an der Fussnote. Zwei automatische Abstaende
+   teilen die freie Hoehe der Karte in zwei gleiche Haelften: die Angaben sitzen
+   damit mittig zwischen der letzten Textzeile und der Linie der Fussnote, und
+   die Fussnote bleibt trotzdem am Fuss der Karte. Ein fester Abstand hier
+   drueckte sie stattdessen an den Satz darueber, das hat Alfred am
+   10. September 2026 beanstandet. Der Umbruch an beliebiger Stelle gilt
+   nur der E-Mail-Adresse, die in der schmalen Spalte sonst herausragt.
+   Der Hover steht wie ueberall auf --akzent-tief; in der Mintfassung faengt
+   styles-mint.css ihn ab und schickt ihn auf --akzent-tiefer, weil
+   --akzent-tief dort derselbe Navyton ist wie --tinte. */
+.step-kontakt { display: grid; justify-items: start; gap: clamp(7px, .7vw, 10px); margin-top: auto; font-style: normal; }
+.step-kontakt a { display: inline-flex; align-items: flex-start; gap: .6em; max-width: 100%; color: var(--tinte); font-size: clamp(15px, 1.2vw, 18px); font-weight: 500; line-height: 1.4; overflow-wrap: anywhere; transition: color .2s ease; }
+.step-kontakt a:hover { color: var(--akzent-tief); }
+.step-kontakt svg { flex: none; width: 1.05em; height: 1.05em; margin-top: .18em; }
+
+/* Die Fussnote der ersten Karte. margin-top: auto zieht sie an den Fuss der
+   Karte, damit sie den Schritt selbst nicht zerreisst; anders als bei der
+   Ueberschrift stoert das hier nicht, weil unten nichts fluchten muss.
+   Sie ist der einzige Text der Karten im leisen Ton. Gemessen am
+   10. September 2026: --tinte-leise auf --stufe-tuerkis kommt auf 4,9 zu 1,
+   das traegt auch diese Groesse. Die feine Linie darueber ist aus --tinte
+   gemischt, --linie waere auf der getoenten Flaeche nicht zu sehen. */
+.step .step-fussnote { max-width: none; margin-top: auto; padding-top: clamp(14px, 1.4vw, 20px); border-top: 1px solid color-mix(in srgb, var(--tinte) 22%, transparent); color: var(--tinte-leise); font-size: clamp(13px, 1vw, 15px); line-height: 1.5; }
+/* Das Fussnotenzeichen bleibt klein und hebt die Zeile nicht auf: mit der
+   Voreinstellung "smaller" und dem geerbten Zeilenabstand waechst sonst die
+   Zeile, in der es steht. */
+.step sup { font-size: .72em; line-height: 0; }
 
 /* Die Pfeile zwischen den Karten sind zwei Pseudoelemente statt eigener
    Zeichen: ::before ist der Schaft, ::after die Spitze aus zwei gedrehten
@@ -654,26 +733,17 @@ h1 { margin: 0 0 calc(-.18 * var(--name)); font-size: var(--name); font-weight: 
 /* ---------- Kontaktangaben mit Karte ---------- */
 
 /* Steht unter der Schrittfolge im selben Raster wie sie: dieselbe Breite,
-   derselbe Abstand nach oben. Aufbau von oben nach unten: dreispaltige
-   Angabenzeile, Einladungssatz, Karte ueber die volle Breite.
+   derselbe Abstand nach oben. Seit dem 10. September 2026 traegt der Block nur
+   noch die Karte ueber die volle Breite; die dreispaltige Angabenzeile darueber
+   ist mit dem Umzug von Telefon und E-Mail in die erste Ablaufkarte entfallen,
+   und mit ihr der Abstand, den die Karte nach oben trug.
    Die erste Fassung stellte die Angaben links neben eine hochkante Karte.
    Alfred hat sie am 6. September 2026 verworfen: die schmale Textspalte stand
    verloren neben der bunten Karte, und die Karte war zu klein, um etwas zu
-   zeigen. Uebereinander nutzt beides die ganze Breite.
+   zeigen. Uebereinander nutzte beides die ganze Breite.
    text-align: left hebt die zentrierte Ausrichtung von .closing-inner auf, die
    fuer Ueberschrift und Schaltflaeche gilt, fuer eine Adresse aber nicht. */
 .kontakt-block { align-self: stretch; width: 100%; margin: clamp(40px, 4.6vw, 72px) auto 0; text-align: left; }
-/* Gebaut wie .hero-contact: feine Linie darueber, gesperrte Beschriftung,
-   Wert darunter. Drei gleiche Spalten statt eines Umbruchs, damit die
-   Beschriftungen auf einer Linie stehen. */
-.kontakt-daten { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(22px, 2.4vw, 40px); padding-top: clamp(22px, 2.4vw, 32px); border-top: 1px solid var(--linie); font-style: normal; }
-.kontakt-label { display: block; margin-bottom: clamp(6px, .7vw, 10px); color: var(--tinte-leise); font-size: clamp(10px, .8vw, 12px); font-weight: 500; letter-spacing: .14em; text-transform: uppercase; }
-.kontakt-daten a { font-size: clamp(16px, 1.35vw, 21px); font-weight: 500; line-height: 1.4; letter-spacing: -.012em; overflow-wrap: anywhere; transition: color .2s ease; }
-.kontakt-daten a:hover { color: var(--akzent-tief); }
-.kontakt-map-link { display: inline-flex; align-items: center; gap: .38em; max-width: 100%; }
-.kontakt-map-link span { min-width: 0; }
-.kontakt-map-link svg { flex: none; width: .9em; height: .9em; }
-
 /* Die Karte ist ein liegendes Band, kein Kaestchen. Erst in dieser Breite ist
    der Weg von der Adresse zum Schwedenplatz zu erkennen; das quadratische
    Fenster der ersten Fassung zeigte drei Gassen.
@@ -701,7 +771,7 @@ h1 { margin: 0 0 calc(-.18 * var(--name)); font-size: var(--name); font-weight: 
      einigen, anders als die drei Schrittkarten weiter oben.
    background traegt die Flaeche, solange die Karte laedt oder wenn sie
    blockiert ist. */
-.kontakt-karte { --karte-schnitt: 60px; position: relative; overflow: hidden; margin-top: clamp(26px, 3vw, 44px); aspect-ratio: 16 / 5; min-height: clamp(220px, 18vw, 300px); border-radius: var(--radius); background: var(--linie); }
+.kontakt-karte { --karte-schnitt: 60px; position: relative; overflow: hidden; aspect-ratio: 16 / 5; min-height: clamp(220px, 18vw, 300px); border-radius: var(--radius); background: var(--linie); }
 /* Google zeigt beim Scrollen ueber einem interaktiven iframe seinen eigenen
    Hinweis. Die Karte ist hier eine Standortansicht, die Adresse darueber
    oeffnet Google Maps bei Bedarf, deshalb faengt das iframe keine Maus- oder
@@ -718,16 +788,17 @@ h1 { margin: 0 0 calc(-.18 * var(--name)); font-size: var(--name); font-weight: 
   .step { min-height: 0; }
   .step h3 { margin-top: clamp(16px, 3vw, 24px); }
   .step p { max-width: none; }
+  .step ul { max-width: none; }
+  /* Untereinander ist die Karte genau so hoch wie ihr Inhalt, die beiden
+     automatischen Abstaende haben dann keinen Weg mehr, und Angaben wie
+     Fussnote saessen auf dem Satz darueber. Feste Abstaende ersetzen sie. */
+  .step .step-kontakt, .step .step-fussnote { margin-top: clamp(16px, 3vw, 24px); }
   .step:not(:last-child)::before { top: calc(100% + var(--stufe-luft) / 2); left: 50%; width: 1.5px; height: var(--pfeil); }
   /* Dieselbe Rechnung wie waagrecht, nur um eine Achse gedreht: die 120,7
      Prozent wandern von der x- auf die y-Achse, damit die Spitze am
      Schaftende sitzt. */
   .step:not(:last-child)::after { top: calc(100% + var(--stufe-luft) / 2 + var(--pfeil) / 2); left: 50%; translate: -50% -121%; rotate: 135deg; }
-  /* Drei Angaben nebeneinander waeren hier je gut 100 Pixel breit, die
-     E-Mail-Adresse braeuchte drei Zeilen. Sie stehen deshalb untereinander.
-     Das Band wird zugleich hoeher: ueber die schmale Breite zeigte 16 zu 5
-     nur noch einen Streifen. */
-  .kontakt-daten { grid-template-columns: minmax(0, 1fr); gap: clamp(18px, 3.4vw, 26px); }
+  /* Ueber die schmale Breite zeigte 16 zu 5 nur noch einen Streifen. */
   .kontakt-karte { aspect-ratio: 4 / 3; }
 }
 
@@ -821,6 +892,35 @@ h1 { margin: 0 0 calc(-.18 * var(--name)); font-size: var(--name); font-weight: 
    leiser als die Links darueber. */
 .footer-name { margin: 0; color: var(--fuss-still); }
 .footer-kammer { margin: 0; color: var(--fuss-still); }
+/* Bildmarke des Oesterreichischen Rechtsanwaltskammertags vor der
+   Kammerangabe, von Alfred am 7. September 2026 verlangt. Nur das Zeichen,
+   ohne Schriftzug: das Wort steht als Text schon daneben.
+   Sie liegt als Maske und nicht als Bild in der Zeile, damit sie
+   currentColor traegt und damit denselben leisen Ton wie die Angabe selbst.
+   Das Rot der Marke erreicht auf dem Navy der Fusszeile nur 2,5:1 und waere
+   dort ein dunkler Fleck. Der Pfad im Zeichen deckt sich in beiden
+   Farbwelten, weil der Ton allein aus --fuss-still kommt.
+   Die Zeile bleibt ein Absatz mit Textgrundlinie, weil .footer-meta seine
+   Kinder an der Grundlinie ausrichtet: ein inline-block stoert das nicht,
+   ein Flexcontainer schon.
+   Das Zeichen steht als data-URI in der Regel und nicht als Verweis auf
+   assets/brand/oerak-signet.svg. Grund: eine Maske ist ein Bild und
+   unterliegt der Gleiche-Herkunft-Regel, und ueber file:// hat jede Datei die
+   Herkunft "null". Beim Doppelklick auf index.html blockiert Chrome den
+   Verweis deshalb, und in der Fusszeile fehlt das Zeichen ohne jede Meldung
+   auf der Seite. Die SVG-Datei bleibt die Quelle und ist dokumentiert, hier
+   steht dieselbe Kontur eingebettet, wie schon beim Rauschen weiter oben. */
+.footer-kammer::before {
+  content: "";
+  display: inline-block;
+  width: 1.08em;
+  height: 1.4em;
+  margin-right: .62em;
+  vertical-align: -.34em;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='19.74 17.85 143.92 186.45'%3E%3Cpath fill='%23000' fill-rule='evenodd' d='m121.65,108.41c20.73-6.5,31.49-25.39,31.49-44.09,0-23.1-16.42-46.47-47.79-46.47l-73.05.02c-4.01,0-7.07.43-9.58,2.85-2.46,2.37-2.94,5.09-2.94,8.51v26.36c0,1.73.14,2.94.46,3.74.32.8.84,1.69,1.75,2.65,1.65,1.73,9.58,8.25,11.34,9.69-3.45.04-6.34.52-8.99,2.44-2.48,1.8-4.6,5.04-4.6,9.12v34.28l.02-.03c-.07,3.13.18,5.38,1.25,7.78,1.21,2.62,3.31,5.27,7.12,9.53l66.27,65.82c2.42,2.37,5.61,3.69,9.01,3.69s6.59-1.32,9-3.69l12.62-12.5L47.19,110.82h33.64l52.27,51.63c4.92,4.91,12.97,4.91,17.92,0l12.64-12.42-42.01-41.62Zm-88.89-3.08c-3.01.13-5.5.82-7.53,2.12v-23.95c.25-2.44.94-3.87,2.44-5.01,1.35-.96,3.15-1.35,6.59-1.35l67.51.02c8.09,0,14.64-4.4,14.64-12.72s-6.55-12.73-14.64-12.73H31.75c-2.76,0-4.9.53-6.52,1.6v-24.58c0-2.06.8-3.56,2.42-4.59,1.41-.77,3.15-.77,5.13-.77l72.57-.03c28.57,0,42.3,21.03,42.3,40.98s-14.23,41.01-42.3,41.01H32.76Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='19.74 17.85 143.92 186.45'%3E%3Cpath fill='%23000' fill-rule='evenodd' d='m121.65,108.41c20.73-6.5,31.49-25.39,31.49-44.09,0-23.1-16.42-46.47-47.79-46.47l-73.05.02c-4.01,0-7.07.43-9.58,2.85-2.46,2.37-2.94,5.09-2.94,8.51v26.36c0,1.73.14,2.94.46,3.74.32.8.84,1.69,1.75,2.65,1.65,1.73,9.58,8.25,11.34,9.69-3.45.04-6.34.52-8.99,2.44-2.48,1.8-4.6,5.04-4.6,9.12v34.28l.02-.03c-.07,3.13.18,5.38,1.25,7.78,1.21,2.62,3.31,5.27,7.12,9.53l66.27,65.82c2.42,2.37,5.61,3.69,9.01,3.69s6.59-1.32,9-3.69l12.62-12.5L47.19,110.82h33.64l52.27,51.63c4.92,4.91,12.97,4.91,17.92,0l12.64-12.42-42.01-41.62Zm-88.89-3.08c-3.01.13-5.5.82-7.53,2.12v-23.95c.25-2.44.94-3.87,2.44-5.01,1.35-.96,3.15-1.35,6.59-1.35l67.51.02c8.09,0,14.64-4.4,14.64-12.72s-6.55-12.73-14.64-12.73H31.75c-2.76,0-4.9.53-6.52,1.6v-24.58c0-2.06.8-3.56,2.42-4.59,1.41-.77,3.15-.77,5.13-.77l72.57-.03c28.57,0,42.3,21.03,42.3,40.98s-14.23,41.01-42.3,41.01H32.76Z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
 
 /* ---------- Rechtsseiten ----------
    Eigene Seite fuer das Impressum, Aufbau nach dem Muster von
@@ -907,7 +1007,14 @@ h1 { margin: 0 0 calc(-.18 * var(--name)); font-size: var(--name); font-weight: 
    rundherum. Es liegt vollstaendig und unverzerrt hinter der Person.
    margin-inline zieht die Flaeche bis an die Fensterkanten. */
 .about-page { background: var(--weiss); }
-.about-banner { position: relative; isolation: isolate; height: clamp(420px, 42vw, 680px); margin-inline: calc(50% - 50vw); overflow: clip; background: #fff; }
+/* --about-band-luft ist der Abstand zwischen der Kopfzeile und dem Bildband.
+   Er steht als margin und nicht als padding: das Gemaelde sitzt mit top: 24px
+   in der Flaeche, das Portraet haengt an deren Unterkante, und ein
+   Innenabstand wuerde beide gegeneinander verschieben. Der Wert faellt mit
+   der Kopfzeile mit, damit die Luft am Telefon nicht groesser wirkt als am
+   Schreibtisch. */
+.about-page { --about-band-luft: clamp(20px, 2.8vw, 48px); }
+.about-banner { position: relative; isolation: isolate; height: clamp(420px, 42vw, 680px); margin-block-start: var(--about-band-luft); margin-inline: calc(50% - 50vw); overflow: clip; background: #fff; }
 /* Luftige Galerie: Bildformat und Hoehe wachsen gemeinsam mit der Breite.
    Die Aquarellspuren stehen ausserhalb des Gemaeldes, kein Bilderrahmen. */
 .about-banner-bild { position: absolute; left: 50%; top: 24px; display: block; width: min(58vw, 940px); height: auto; object-fit: contain; transform: translateX(-50%); }
@@ -945,24 +1052,56 @@ h1 { margin: 0 0 calc(-.18 * var(--name)); font-size: var(--name); font-weight: 
     linear-gradient(to bottom, transparent 38%, rgb(255 255 255 / .4) 72%, #fff 100%);
 }
 
-/* Der Abschluss braucht auf dieser Seite Abstand zur kurzen Einleitung,
-   sonst setzt die dunkle Fusszeile unmittelbar unter dem Text an. */
-.about-intro { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(40px, 8.2vw, 130px); width: min(1040px, 76vw); max-width: 100%; margin: 20px auto clamp(64px, 7vw, 112px); color: var(--tinte); }
-.about-intro p { margin: 0; }
-.about-intro-lead { max-width: 430px; font-size: clamp(28px, 2.27vw, 36px); line-height: 1.38; font-weight: 500; letter-spacing: -.025em; }
-.about-intro-text { padding-top: 7px; font-size: clamp(17px, 1.26vw, 20px); line-height: 1.6; }
+/* Der Textteil unter dem Bildband. Bis zum 10. September 2026 standen hier
+   zwei gleich breite Spalten mit je einem kurzen Absatz; fuer einen
+   persoenlichen Text war darin kein Platz, und zwei gleich breite Spalten
+   halbieren jede Laenge sofort wieder.
+
+   Jetzt traegt eine schmale Randspalte die Beschriftung und daneben steht eine
+   einzelne Lesespalte, in der beliebig viele Absaetze untereinander laufen.
+   Drei Punkte, die dabei zusammengehoeren:
+
+   - Die Breite des Blocks ist dieselbe wie die des Gemaeldes, min(58vw, 940px).
+     Beide sind mittig gesetzt, ihre linken Kanten stehen deshalb auf derselben
+     Senkrechten. Wer die Bildbreite aendert, verschiebt auch den Text.
+   - Innen ist der Block trotzdem unsymmetrisch: die Lesespalte ist gedeckelt,
+     der Rest der Breite bleibt rechts als Luft stehen. Der Text sitzt damit
+     nicht auf der Seitenachse, obwohl der Block als Ganzes mittig steht.
+   - Die Lesespalte ist bewusst schmal. Ueber rund 60 Zeichen je Zeile wird ein
+     laengerer Fliesstext muehsam; die Deckelung ist der eigentliche Zweck der
+     Regel und keine Feinheit.
+
+   Der Abstand nach unten haelt die dunkle Fusszeile vom Text weg. */
+.about-text { display: grid; grid-template-columns: minmax(0, clamp(76px, 10vw, 190px)) minmax(0, clamp(280px, 44vw, 500px)); column-gap: clamp(20px, 3vw, 64px); width: min(58vw, 940px); max-width: 100%; margin: clamp(34px, 4vw, 62px) auto clamp(76px, 8.4vw, 124px); color: var(--tinte); }
+/* Die Beschriftung steht auf der Hoehe der ersten Zeile der Leitzeile, deshalb
+   der Innenabstand oben. Die kurze Haarlinie darunter laeuft nur ueber einen
+   Teil der Randspalte, sie trennt nichts, sie markiert den Anfang. */
+.about-text .label { margin: 0; padding-top: .5em; }
+.about-text .label::after { content: ""; display: block; width: 44px; height: 1px; margin-top: clamp(10px, 1.1vw, 14px); background: var(--linie); }
+.about-text-lauf > p { margin: 0; max-width: 62ch; }
+.about-text-lead { font-size: clamp(26px, 2.1vw, 34px); line-height: 1.36; font-weight: 500; letter-spacing: -.025em; }
+/* Der Fliesstext steht im leisen Ton, wie auf den uebrigen Unterseiten. Auf
+   Weiss erreicht er in der Mintfassung 6,1:1, in der warmen 5,5:1. Der
+   Groessenunterschied zur Leitzeile traegt die Gliederung, nicht eine
+   Zwischenueberschrift: die Seite soll keine Kapitel bekommen. */
+.about-text-lauf > p + p { margin-top: clamp(13px, 1.4vw, 20px); font-size: clamp(16px, 1.15vw, 18px); line-height: 1.68; color: var(--tinte-leise); }
+/* Die Pause nach der Leitzeile ist groesser als die zwischen den Absaetzen. */
+.about-text-lead + p { margin-top: clamp(24px, 2.8vw, 42px); }
 
 @media (max-width: 899px) {
   .about-banner { height: clamp(380px, 116vw, 560px); }
   .about-banner-bild { top: 24%; width: auto; height: min(76%, calc(88vw * 828 / 1198)); max-width: 88%; }
   .about-banner-portraet img { height: 96%; }
   .about-banner::before { display: none; }
-  .about-intro { grid-template-columns: 1fr; gap: 22px; width: min(620px, 100%); margin-top: 26px; }
+  /* Einspaltig: die Randspalte hat auf einem Telefon keinen Platz, die
+     Beschriftung rueckt ueber den Text. */
+  .about-text { grid-template-columns: 1fr; width: min(620px, 100%); margin-top: 30px; }
+  .about-text .label { padding-top: 0; margin-bottom: clamp(18px, 4vw, 26px); text-align: center; }
+  .about-text .label::after { margin-inline: auto; }
   /* Die Leitzeile steht am Telefon mittig, wie die Ueberschriften der uebrigen
-     Seiten. Der Absatz darunter bleibt linksbuendig, mittig gesetzter
+     Seiten. Die Absaetze darunter bleiben linksbuendig, mittig gesetzter
      Fliesstext ist auf schmalen Zeilen schwer zu lesen. */
-  .about-intro-lead { max-width: 24ch; margin-inline: auto; text-align: center; }
-  .about-intro-text { padding-top: 0; }
+  .about-text-lead { max-width: 24ch; margin-inline: auto; text-align: center; }
 }
 
 /* Sichtbarer Text ist im Hero nicht gewuenscht. Das h1 bleibt fuer
@@ -1211,9 +1350,34 @@ html:not(.js) dialog:target .dialog-content { padding-top: 44px; }
   .hero-contact { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: baseline; gap: clamp(10px, 2.4vw, 14px) clamp(14px, 3.4vw, 20px); }
   .hero-contact-eintrag { display: contents; }
   .hero-contact-label { margin-bottom: 0; }
-  /* Drei Spalten nebeneinander lassen der E-Mail-Adresse hier rund 150 Pixel,
-     sie braucht mehr. Die Wegweiser stehen deshalb untereinander. */
-  .footer-nav { grid-template-columns: minmax(0, 1fr); gap: clamp(26px, 6vw, 34px); }
+  /* Untereinander war die Fusszeile am Telefon 938 Pixel hoch, davon 583 allein
+     die Wegweiser, und man scrollte zu lange. Drei Spalten nebeneinander gehen
+     hier nicht: sie lassen der E-Mail-Adresse rund 150 Pixel, sie braucht 140.
+
+     Also zwei gleich breite Spalten, Kanzlei und Kontakt nebeneinander,
+     Rechtliches darunter ueber beide. Gleich breit ist der Punkt: ungleiche
+     Spalten setzen die beiden mittig gesetzten Bloecke unsymmetrisch ins Bild,
+     das sieht nach Versehen aus. Die Reihenfolge bleibt die des Markups, damit
+     der Tabulator der Lesefolge folgt.
+
+     max-width haelt die Spalten beieinander; ohne sie stehen sie bei 540 Pixeln
+     je 234 Pixel breit weit auseinander. Die 420 sind so gewaehlt, dass die
+     Adresse ab rund 460 Pixeln Fensterbreite wieder in eine Zeile passt.
+
+     text-wrap: pretty entscheidet, wo die Adresse bricht: ohne die Regel nach
+     "1010", und "Wien" steht allein in der zweiten Zeile, mit ihr nach dem
+     Komma. Browser ohne die Eigenschaft brechen wie bisher, das ist kein
+     Fehler.
+
+     Unter rund 340 Pixeln Fensterbreite ist die E-Mail-Adresse breiter als ihre
+     Spalte und ragt beidseitig je fuenf Pixel in die Luft daneben. Die Nachbarn
+     sind dort kurz, es beruehrt nichts, und die Seite laeuft nicht ueber.
+
+     Gemessen am 7. September 2026: die Fusszeile ist am Telefon dadurch 751
+     statt 938 Pixel hoch. */
+  .footer-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(26px, 6vw, 34px) clamp(20px, 5vw, 32px); max-width: 420px; margin-inline: auto; }
+  .footer-nav .footer-spalte:last-child { grid-column: 1 / -1; }
+  .footer-nav a { text-wrap: pretty; }
 }
 
 /* ---------- Schmale Telefone ----------
@@ -1286,14 +1450,34 @@ html:not(.js) dialog:target .dialog-content { padding-top: 44px; }
    Anklickbar ist die ganze Karte, den Verweis traegt aber allein die
    Ueberschrift: ihr ::after legt sich als unsichtbare Flaeche darueber. Damit
    gibt es je Karte genau einen Verweis mit sprechendem Text, und der Fokusring
-   umschliesst trotzdem die ganze Karte. */
-.blog-liste { display: flex; flex-direction: column; gap: clamp(14px, 1.5vw, 20px); width: min(900px, 100%); margin-inline: auto; text-align: left; }
+   umschliesst trotzdem die ganze Karte.
+
+   Alle Karten sind gleich hoch, unabhaengig von der Laenge des Titels und der
+   Beschreibung. Das leistet grid-auto-rows: 1fr, es gibt jeder Zeile die Hoehe
+   der hoechsten. Damit eine einzige ausschweifende Beschreibung nicht alle
+   Karten aufblaeht, sind Titel und Text zusaetzlich auf eine feste Zeilenzahl
+   begrenzt, siehe --blog-karte-titelzeilen und --blog-karte-textzeilen. Der
+   Ueberhang wird abgeschnitten, nicht umbrochen; der vollstaendige Text steht
+   im Beitrag.
+
+   Die Zeilenzahl gilt fuer alle Fensterbreiten und ist bewusst grosszuegig:
+   dieselbe Beschreibung braucht in der schmalen Spalte mittlerer Breiten
+   deutlich mehr Zeilen als auf dem Schreibtisch. Wer sie kleiner setzt,
+   schneidet dort gewoehnliche Beschreibungen an. Eine hohe Zahl kostet keine
+   Hoehe: die Karten sind so hoch wie ihr laengster Inhalt, nicht so hoch wie
+   die erlaubte Zeilenzahl. */
+.blog-liste { --blog-karte-titelzeilen: 3; --blog-karte-textzeilen: 5; display: grid; grid-auto-rows: 1fr; gap: clamp(14px, 1.5vw, 20px); width: min(900px, 100%); margin-inline: auto; text-align: left; }
 .blog-karte { position: relative; display: grid; grid-template-columns: minmax(128px, 19%) minmax(0, 1fr); gap: clamp(14px, 1.8vw, 30px); padding: clamp(20px, 2.2vw, 30px) clamp(22px, 2.6vw, 36px); border: 1px solid var(--linie); border-radius: clamp(8px, .7vw, 11px); }
 /* Die Übersichtskarten bleiben beim Überfahren unverändert. Der Verweis und
    sein Fokus bleiben erhalten, nur die dekorativen Zustandswechsel entfallen. */
 /* .legal-body p zentriert seine Absaetze mit margin: 0 auto und begrenzt sie
    auf 62 Zeichen. In der Karte bestimmt die Spalte die Breite. */
 .legal-body .blog-karte p { max-width: none; margin-inline: 0; }
+
+/* Rechte Spalte als Saeule: Titel und Text oben, "Beitrag lesen" unten. So
+   steht der Hinweis in allen Karten auf derselben Grundlinie, auch wenn der
+   Text darueber kuerzer ist. */
+.blog-karte-inhalt { display: flex; flex-direction: column; }
 
 /* Linke Spalte: Rechtsgebiet ueber Datum, beide klein und versal. Auf der
    Grundlinie des Titels, nicht auf der Oberkante der Karte. */
@@ -1302,11 +1486,13 @@ html:not(.js) dialog:target .dialog-content { padding-top: 44px; }
 .blog-karte-datum { color: var(--tinte-still); }
 
 /* Rechte Spalte */
-.legal-body .blog-karte-titel { margin: 0; font-size: clamp(19px, 1.7vw, 25px); font-weight: 700; line-height: 1.25; letter-spacing: -.02em; }
+.legal-body .blog-karte-titel { margin: 0; font-size: clamp(19px, 1.7vw, 25px); font-weight: 700; line-height: 1.25; letter-spacing: -.02em; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--blog-karte-titelzeilen); line-clamp: var(--blog-karte-titelzeilen); overflow: hidden; }
 .blog-karte-titel a { color: var(--tinte); }
 .blog-karte-titel a::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
-.legal-body .blog-karte .blog-karte-text { max-width: none; margin: clamp(9px, 1vw, 13px) 0 0; font-size: clamp(15px, 1.1vw, 17px); }
-.blog-karte-mehr { margin: clamp(12px, 1.3vw, 17px) 0 0; color: var(--akzent-tief); font-size: clamp(14px, 1.05vw, 16px); font-weight: 500; }
+.legal-body .blog-karte .blog-karte-text { max-width: none; margin: clamp(9px, 1vw, 13px) 0 0; font-size: clamp(15px, 1.1vw, 17px); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--blog-karte-textzeilen); line-clamp: var(--blog-karte-textzeilen); overflow: hidden; }
+/* margin-top: auto schiebt den Hinweis an den Fuss der Karte, das padding
+   haelt den Mindestabstand zum Text darueber. */
+.legal-body .blog-karte .blog-karte-mehr { margin: auto 0 0; padding-top: clamp(12px, 1.3vw, 17px); color: var(--akzent-tief); font-size: clamp(14px, 1.05vw, 16px); font-weight: 500; }
 .blog-leer { color: var(--tinte-leise); }
 
 /* Der Fokusring gehoert um die ganze Karte, nicht nur um die Ueberschrift.
@@ -1320,8 +1506,16 @@ html:not(.js) dialog:target .dialog-content { padding-top: 44px; }
 /* Unter 640 Pixeln reicht die Breite fuer zwei Spalten nicht mehr: Gebiet und
    Datum ruecken als eine Zeile ueber den Titel. */
 @media (max-width: 640px) {
-  .blog-karte { grid-template-columns: minmax(0, 1fr); gap: clamp(10px, 2vw, 14px); }
+  /* grid-template-rows: auto 1fr gibt die zusaetzliche Hoehe der gleich hohen
+     Karte allein dem Inhalt. Ohne das dehnt das Raster auch die Zeile mit
+     Rechtsgebiet und Datum, und zwischen ihr und dem Titel klafft eine Luecke. */
+  .blog-karte { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; gap: clamp(10px, 2vw, 14px); }
   .blog-karte-meta { flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; padding-top: 0; }
+  /* Dieselbe Beschreibung braucht auf einem Telefon rund die doppelte
+     Zeilenzahl wie auf dem Schreibtisch. Gemessen am 7. September 2026 an den
+     vorhandenen Beitraegen: bei 320 Pixeln bis zu 4 Zeilen Titel und 8 Zeilen
+     Text. Niedrigere Werte schneiden dort gewoehnliche Beschreibungen an. */
+  .blog-liste { --blog-karte-titelzeilen: 4; --blog-karte-textzeilen: 8; }
 }
 
 /* Kopf eines Beitrags.
